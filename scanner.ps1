@@ -1,16 +1,16 @@
-# Расширенные паттерны для детектирования
-$CriticalPatterns = @(
+# Паттерны читов и инжектов
+$CheatPatterns = @(
     'Vape','VapeLite','LiquidBounce','FDPClient','Rise','Tenacity','Novoline','Astolfo','ZeroDay','Exhibition',
-    'DortWare','MoonX','Sight','Juul','Jigsaw','Wurst','Impact','Sigma','Sigma4','Sigma5','Phobos','Ares',
+    'DortWare','MoonX','Juul','Jigsaw','Wurst','Impact','Sigma','Sigma4','Sigma5','Phobos','Ares',
     'KAMI','KAMI_Blue','Seppuku','RusherHack','Future','Pyro','Konas','WintWare','Nursultan','Norules',
     'Akrien','DeadCode','Eternity','WEXSIDE','Rich','BleachHack','Matix','R3D','Celestial','Destroy',
     'ArchWare','NightMare','BoberWare','FLauncher','ExLoader','Celestia','Expensive','Meteor','MeteorClient',
-    'Dreampool','Cortex','Spam','AimBot','FreeCam','MobHealthBar','Tweakeroo','PlayerHealthIndicators',
+    'Dreampool','Cortex','AimBot','FreeCam','MobHealthBar','Tweakeroo','PlayerHealthIndicators',
     'AutoAttack','InventoryTotem','Elytra','RockStarClient','MoonHack','FlugerClient','Vagaline','HardyClient',
     'ExtremeHack','Topkascroller','Arbuz','Avalon','Leontap','ZEXIS','RastyClient','Rasty','Winner',
     'DreampollClient','fragsx','KeazClient','keaz','EpfiriumClient','Epfirium','NOVA','NOVAClient','emfrium',
     'ForgeHax','Huzuni','flux','NEVERHOOK','Fecurity','PhasmaClient','Phasma','Vendex','RYNWAREClient',
-    'Runware','BuzeClient','Buze','Visual','plintusvisual','PulseVisual','Deltaclient','Deltaloader',
+    'Runware','BuzeClient','Buze','plintusvisual','PulseVisual','Deltaclient','Deltaloader',
     'Altening','Authme','AxeClient','Azurite','BaconClient','Banzem','Battlehack','Blacksploit','BlueGhost',
     'BoxHack','BranUtility','BruhMoment','BurnDown','BypassClient','Camelot','Centrum','Chattrix',
     'CheatBreaker','ClickAssistant','CortexClient','CMDCrystal','ColdClient','CombatMC','CommandBlock',
@@ -18,88 +18,23 @@ $CriticalPatterns = @(
     'DripESP','DuckWare','EarthHack','Eclipse','Ephesus','Fedora','Fencing','Ferox','FiftyTwo','Flubba',
     'Fracture','Gamma','GlowClient','Gonk','Griefing','HackedClient','HawkEye','HeavenSense','Hydrogen',
     'IceClient','Infinity','Insanity','Invictus','Jartex','Jello','Kauri','Keks','Kokuri','Komorebi',
-    'Kronos','Lime','Lydia','Medusa','Mercury','Midnight','MinecraftTools','Monsoon','Mythic','TrohiilClient',
+    'Kronos','Lime','Lydia','Medusa','Midnight','MinecraftTools','Monsoon','Mythic','TrohiilClient',
     'NeverLose','Odin','Pride','ProxyClient','Quest','Redesky','Reflex','Rodia','Rubix','SaltClient',
     'ShadowWare','Skidder','Spartan','Stark','StatusHax','Synapse','ThunderHack','TownCraft','Trident',
     'Unlegit','Unnamed','Vero','Void','VuX','Vulcan','Wawa','YAWN','Yijin','Yolocaust','Yrela',
     'xray','scaffold','killaurea','nuker','vclip','hoyer','phase','Baritone','Inertia','GishCode',
-    'Doomsday','Zamorozka','optimizer','hotbar','stealer','Scroller','armorhotswap','locator','rcon',
-    'Augustus','Aurora','Azura','Bleach','Bypass','Candy','Carbon','Cheat','Client','Crack','Crystal',
-    'Dragon','Eject','Elite','Empire','Envy','Eternal','Evo','Explicit','Fade','Famous','Fanta',
-    'Flare','Focus','Fortnite','Fusion','Galaxy','Genesis','Ghost','Glide','God','Gravity','Grief',
-    'Grinder','Hack','Hades','Harmony','Havoc','Haze','Hell','Hero','Hidden','High','Hollow',
-    'Holy','Horizon','Hyper','Ice','Illusion','Immortal','Imperial','Inferno','Infinite','Insane',
-    'Instinct','Intense','Invisible','Ion','Joker','Karma','Killer','King','Knockback','Krypton',
-    'Legacy','Legend','Legion','Lethal','Leviathan','Light','Limit','Logic','Loki','Lord','Lucid',
-    'Luminosity','Lunar','Lust','Mad','Magic','Magnet','Majestic','Malware','Maniac','Massacre',
-    'Matrix','Mega','Melody','Menace','Merciless','Meteor','Midas','Might','Mimic','Mind','Minotaur',
-    'Mirage','Misery','Momentum','Money','Monster','Mood','Morph','Mortal','Motion','Mystic','Nebula',
-    'Necro','Nemesis','Neo','Neon','Nether','Nexus','Night','Nihility','Nimbus','Ninja','Nitro',
-    'Nocturne','Nova','Nuclear','Null','Oblivion','Obsidian','Ocean','Omega','Omen','Omni','Onyx',
-    'Opaque','Oracle','Orbit','Origin','Osiris','Outlaw','Overkill','Overlord','Oxygen','Pandora',
-    'Paradox','Paragon','Parasite','Patched','Payback','Pegasus','Perfection','Phantom','Phoenix','Plague',
-    'Plasma','Polaris','Poseidon','Power','Precision','Predator','Prime','Prism','Pro','Project',
-    'Prophet','Proton','Pulse','Punish','Pure','Purge','Pyramid','Quantum','Quartz','Quasar','Rage',
-    'Ragnarok','Rampage','Rapid','Rapture','Raven','Reaper','Rebel','Rebirth','Recon','Red','Refined',
-    'Regal','Reign','Reloaded','Remix','Renegade','Requiem','Resilience','Resistance','Respawn','Retribution',
-    'Revenge','Revival','Revolution','Rift','Riot','Risen','Roar','Robust','Rogue','Royal','Ruin',
-    'Rune','Rush','Ruthless','Saber','Sacred','Savage','Scar','Scepter','Scorch','Scythe','Secret',
-    'Sentinel','Serenity','Serpent','Shadow','Shatter','Shine','Shock','Sickle','Silent','Sinister',
-    'Siphon','Siren','Skeleton','Sky','Sleek','Slick','Slime','Sniper','Solar','Soul','Sovereign',
-    'Spark','Spectre','Speed','Sphere','Spirit','Splash','Sprint','Spy','Stalker','Star','Static',
-    'Steel','Stellar','Sting','Storm','Strike','Strix','Subzero','Sultan','Summit','Super','Supreme',
-    'Surge','Swagger','Swift','Sword','Symmetry','Syndicate','System','Tactical','Talisman','Tempest',
-    'Temple','Terror','Tesla','Thanatos','Thanos','Thunder','Tidal','Titan','Toothless','Torment',
-    'Tornado','Torrent','Toxic','Tracer','Tranquility','Transcend','Trap','Treasure','Tremor','Trinity',
-    'Triumph','Troll','Turbine','Turbo','Twilight','Typhoon','Tyrant','Uber','Ultima','Ultimate',
-    'Ultra','Umbra','Unbreakable','Unchained','Undead','Underworld','Undying','Unfair','Unholy','Unicorn',
-    'Unite','Universal','Unleash','Unlimited','Unreal','Unseen','Unstoppable','Untouchable','Uprising',
-    'Vanish','Vapor','Vector','Veil','Velocity','Venom','Vibrant','Vicious','Victor','Vigil','Vigor',
-    'Vindicta','Viper','Viral','Virtue','Vision','Vital','Vivid','Volatile','Volt','Vortex','Warden',
-    'Warlock','Warp','Warrior','Wave','Weapon','Whirlwind','Wicked','Wildfire','Wings','Winter','Wither',
-    'Wolf','Wonder','Wraith','Wrath','Xenon','Xerxes','Yin','Zebra','Zen','Zenith','Zephyr','Zeus',
-    'Zone','Zorro','Zyclone','abyss','acid','alpha','alt','anarchy','angle','anti','apex','apollo',
-    'arc','archer','arctic','ares','aria','ark','armor','arrow','ash','assassin','astral','atlas',
-    'atomic','aurora','avalanche','axis','azure','bane','beast','berserk','blade','blast','blaze',
-    'blitz','blood','bolt','boom','bot','breach','brutal','byte','cannon','chaos','charge','charm',
-    'chrome','cipher','clash','claw','cloud','cobra','code','colossus','comet','corsair','cosmic',
-    'crash','crazy','creeper','cross','crow','crusader','crypt','curse','cyber','cyclone','dagger',
-    'dark','dawn','death','decay','delta','demon','desire','deus','devil','diamond','dire','divine',
-    'doom','dragonfly','dread','drift','dune','dust','dynamite','eagle','echo','edge','element',
-    'ember','end','energy','enigma','epic','epsilon','era','essence','exile','exo','exodus','fable',
-    'falcon','fall','fang','fate','fear','final','fire','fist','flame','flash','force','frost',
-    'fury','gale','genie','glacier','gloom','goliath','gore','grace','grand','grave','grim','guardian',
-    'hail','hammer','havoc','heart','heavy','helix','hex','hive','honor','hope','hunter','hydra',
-    'ignite','impact','impulse','incognito','index','indigo','infernal','iron','ivory','jackal','jade',
-    'javelin','jolt','jungle','justice','kraken','lance','laser','lethal','leviathan','liberty','lion',
-    'lunaris','lycan','maelstrom','magma','mantis','marble','mars','masquerade','mecha','mercy','metal',
-    'mirage','myst','nebula','necro','neptune','nether','nexus','nova','obelisk','omega','onyx','oracle',
-    'orb','outcast','paladin','phantom','plague','plasma','polar','prism','prophet','pulse','quark',
-    'quasar','radiant','raider','raven','rebel','relic','requiem','rift','rogue','rune','saber','savage',
-    'scarab','shade','shadow','shard','shatter','shogun','silicon','skull','slayer','solar','spectral',
-    'spider','spine','spirit','sprite','star','steel','storm','strife','summon','sun','surge','swarm',
-    'swift','talon','tempest','thunder','titan','torrent','toxic','tracer','trinity','tundra','typhoon',
-    'umbra','vanguard','venom','viper','vortex','warp','whisper','widow','winter','wraith','wyvern',
-    'zephyr','zeus','zodiac'
-)
-
-$HighPatterns = @(
-    'Lunar','Badlion','Feather','Labymod','5zig','CheatBreaker','CosmicClient','Hyperium','PvPLounge',
-    'Crystal','Dragon','Eternal','Flux','Galaxy','Genesis','Hades','Horizon','Imperial','Legacy',
-    'Leviathan','Matrix','Nebula','Omega','Pandora','Paradox','Phantom','Quantum','Ragnarok','Titan'
-)
-
-$SuspiciousPatterns = @(
-    'inject','hack','cheat','loader','bypass','fly','aimbot','speed','freecam','autoclicker',
-    'macro','exploit','crack','premium','unban','ghost','stealth','undetect','anticheat',
-    'triggerbot','wallhack','esp','radar','tracers','xray','norecoil','nospread','rapidfire',
+    'Doomsday','Zamorozka','hotbar','stealer','Scroller','armorhotswap','locator','rcon',
+    'MeteorAddon','MeteorReject','Meteorist','MeteorPlus','Meteorite',
+    'Lunar','Badlion','Feather','Labymod','5zig','CosmicClient','Hyperium','PvPLounge',
+    'Crystal','Dragon','Eternal','Galaxy','Genesis','Hades','Horizon','Imperial','Legacy',
+    'Leviathan','Nebula','Omega','Pandora','Paradox','Phantom','Quantum','Ragnarok','Titan',
+    'triggerbot','wallhack','tracers','norecoil','nospread','rapidfire',
     'bunnyhop','strafe','spinbot','killaura','reach','velocity','antikb','antiknockback',
     'autopot','autosoup','autogapple','autoeat','autorespawn','autologin','autofish','autofarm',
     'autowalk','autosneak','autojump','autosprint','autosword','autototem','crystalaura',
     'surround','selfdestruct','autodisconnect','autoreconnect','fakename','spoof','spoofer',
-    'vpn','proxy','alt','altmanager','account','session','token','pass','password','credential',
-    'keystroke','keylogger','screenlogger','clipboard','screenshot','webcam','microphone','record',
-    'download','execute','payload','backdoor','rootkit','ransomware','trojan','worm','virus'
+    'keylogger','screenlogger','backdoor','rootkit','ransomware','trojan','worm',
+    'inject','loader','bypass','autoclicker','macro','exploit','crack','unban','stealth','undetect'
 )
 
 $SystemServicesToCheck = @(
@@ -123,27 +58,76 @@ $whitelistPatterns = @(
     'prism', 'polyMC', 'gdlauncher', 'atlauncher', 'technic', 
     'voidlauncher', 'tlauncher', 'minecraft', 'java', 'javaw', 'javaws', 
     'launcher', 'mojang', 'microsoft', 'windows', 'system32', 'syswow64', 
-    'program files', 'programdata', 'appdata', 'users'
+    'program files', 'programdata', 'appdata', 'users',
+    'intel', 'nvidia', 'amd', 'realtek', 'steam', 'discord', 'yandex',
+    'service', 'services', 'svc', 'sensor', 'sensors', 'display', 'audio',
+    'network', 'net', 'wifi', 'bluetooth', 'printer', 'print', 'scan',
+    'camera', 'webcam', 'microphone', 'speaker', 'battery',
+    'update', 'updater', 'install', 'installer', 'uninstall', 'setup',
+    'driver', 'drivers', 'device', 'devices', 'hardware', 'software',
+    'system', 'windows', 'microsoft', 'office', 'cloud', 'backup',
+    'restore', 'recovery', 'security', 'defender', 'firewall', 'antivirus',
+    'protection', 'monitor', 'monitoring', 'diagnostic', 'diagnostics',
+    'telemetry', 'compatibility', 'assistant', 'helper', 'manager',
+    'management', 'broker', 'provider', 'host', 'runtime', 'framework',
+    'platform', 'controller', 'control', 'configuration', 'config',
+    'registry', 'profile', 'profiles', 'account', 'accounts', 'credential',
+    'credentials', 'authentication', 'authorization', 'encryption',
+    'certificate', 'certificates', 'license', 'licensing',
+    'activation', 'validation', 'verification', 'sync', 'synchronization',
+    'sharing', 'share', 'remote', 'desktop', 'terminal', 'session',
+    'sessions', 'login', 'logon', 'logoff', 'password', 'passwords',
+    'token', 'tokens', 'key', 'keys', 'vault', 'wallet', 'payment',
+    'payments', 'billing', 'invoice', 'invoices', 'tax', 'taxes',
+    'bank', 'banking', 'finance', 'financial', 'money', 'currency',
+    'exchange', 'market', 'trading', 'invest', 'investment', 'stock',
+    'stocks', 'bond', 'bonds', 'fund', 'funds', 'portfolio', 'asset',
+    'assets', 'liability', 'liabilities', 'equity', 'capital', 'revenue',
+    'expense', 'expenses', 'profit', 'loss', 'income', 'salary', 'wage',
+    'wages', 'payroll', 'deduction', 'deductions', 'benefit',
+    'benefits', 'insurance', 'health', 'medical', 'dental', 'vision',
+    'prescription', 'pharmacy', 'doctor', 'nurse', 'hospital', 'clinic',
+    'patient', 'patients', 'appointment', 'appointments', 'schedule',
+    'scheduling', 'calendar', 'reminder', 'reminders', 'notification',
+    'notifications', 'alert', 'alerts', 'warning', 'warnings',
+    'log', 'logs', 'logging', 'audit', 'auditing', 'trace',
+    'tracing', 'debug', 'debugging', 'test', 'testing', 'qa', 'quality',
+    'assurance', 'compliance', 'regulation', 'regulations', 'policy',
+    'policies', 'procedure', 'procedures', 'standard', 'standards',
+    'guideline', 'guidelines', 'rule', 'rules', 'law', 'laws', 'legal',
+    'contract', 'contracts', 'agreement', 'agreements',
+    'document', 'documents', 'file', 'files', 'folder', 'folders',
+    'directory', 'directories', 'path', 'paths', 'location', 'locations',
+    'address', 'addresses', 'phone', 'phones', 'email', 'emails',
+    'message', 'messages', 'chat', 'chats', 'communication',
+    'communications', 'contact', 'contacts', 'person', 'people',
+    'user', 'users', 'group', 'groups', 'role', 'roles', 'permission',
+    'permissions', 'access', 'rights', 'privilege', 'privileges',
+    'admin', 'administrator', 'administrators', 'root', 'superuser',
+    'owner', 'ownership', 'member', 'members', 'membership',
+    'subscription', 'subscriptions', 'plan', 'plans', 'package',
+    'packages', 'product', 'products', 'item', 'items', 'inventory',
+    'warehouse', 'shipping', 'delivery', 'order', 'orders', 'cart',
+    'checkout', 'purchase', 'purchases', 'sale', 'sales', 'transaction',
+    'transactions', 'receipt', 'receipts', 'refund', 'refunds',
+    'return', 'returns', 'warranty', 'support', 'customer', 'customers',
+    'client', 'clients', 'vendor', 'vendors', 'supplier', 'suppliers',
+    'partner', 'partners', 'employee', 'employees', 'staff', 'team',
+    'department', 'departments', 'division', 'divisions', 'branch',
+    'branches', 'office', 'offices', 'building', 'buildings',
+    'floor', 'floors', 'room', 'rooms', 'desk', 'desks', 'chair',
+    'chairs', 'computer', 'computers', 'laptop', 'laptops',
+    'desktop', 'desktops', 'server', 'servers', 'router', 'routers',
+    'switch', 'switches', 'modem', 'modems', 'scanner', 'scanners',
+    'keyboard', 'keyboards', 'mouse', 'mice', 'screen', 'screens',
+    'projector', 'projectors', 'hyper', 'vm', 'virtual', 'virtualization',
+    'power', 'shell', 'explorer', 'sihost', 'taskhost', 'conhost',
+    'dwm', 'csrss', 'smss', 'wininit', 'winlogon', 'lsass',
+    'fontdrvhost', 'fontdrvhost.exe', 'svchost', 'dllhost', 'wmiprvse'
 )
 
 $allPatterns = @()
-$allPatterns += $CriticalPatterns
-$allPatterns += $HighPatterns
-$allPatterns += $SuspiciousPatterns
-
-function Is-ExactWordMatch {
-    param([string]$Text, [string]$Word)
-    
-    if (-not $Text -or -not $Word) { 
-        return $false 
-    }
-    
-    $lowerText = $Text.ToLower()
-    $lowerWord = $Word.ToLower()
-    
-    $pattern = "(?<![a-z0-9])$([regex]::Escape($lowerWord))(?![a-z0-9])"
-    return $lowerText -match $pattern
-}
+$allPatterns += $CheatPatterns
 
 function Is-Whitelisted {
     param([string]$InputString)
@@ -186,7 +170,7 @@ function Get-RiskLevel {
         }
     }
     
-    foreach ($pattern in $CriticalPatterns) {
+    foreach ($pattern in $CheatPatterns) {
         if ($lowerInput -match [regex]::Escape($pattern.ToLower())) {
             $foundPatterns += $pattern
             $probability += 15
@@ -203,50 +187,6 @@ function Get-RiskLevel {
     if ($foundPatterns.Count -gt 0) {
         return @{ 
             Risk = 'Critical'
-            Reason = "Совпадение с $($foundPatterns -join ', ')"
-            Probability = $probability 
-        }
-    }
-    
-    foreach ($pattern in $HighPatterns) {
-        if ($lowerInput -match [regex]::Escape($pattern.ToLower())) {
-            $foundPatterns += $pattern
-            $probability += 10
-        }
-    }
-    
-    if ($foundPatterns.Count -ge 2) {
-        $probability = [math]::Min(70, $probability + 40)
-    }
-    elseif ($foundPatterns.Count -eq 1) {
-        $probability = [math]::Min(70, $probability + 50)
-    }
-    
-    if ($foundPatterns.Count -gt 0) {
-        return @{ 
-            Risk = 'High'
-            Reason = "Совпадение с $($foundPatterns -join ', ')"
-            Probability = $probability 
-        }
-    }
-    
-    foreach ($pattern in $SuspiciousPatterns) {
-        if ($lowerInput -match [regex]::Escape($pattern.ToLower())) {
-            $foundPatterns += $pattern
-            $probability += 5
-        }
-    }
-    
-    if ($foundPatterns.Count -ge 3) {
-        $probability = [math]::Min(40, $probability + 25)
-    }
-    elseif ($foundPatterns.Count -ge 1) {
-        $probability = [math]::Min(40, $probability + 15)
-    }
-    
-    if ($foundPatterns.Count -gt 0) {
-        return @{ 
-            Risk = 'Suspicious'
             Reason = "Совпадение с $($foundPatterns -join ', ')"
             Probability = $probability 
         }
@@ -318,6 +258,7 @@ function Get-DaysSinceLastWrite {
 }
 
 $results = @()
+$htmlResults = @()
 $totalSteps = 10
 $currentStep = 0
 $isAdmin = Test-Admin
@@ -353,7 +294,7 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
             $procInfo = Get-Item -Path $procPath -ErrorAction SilentlyContinue
         }
         
-        $results += [PSCustomObject]@{
+        $result = [PSCustomObject]@{
             'Тип' = 'Процесс'
             'Имя' = $procName
             'Путь' = if ($procPath) { $procPath } else { 'N/A' }
@@ -365,6 +306,12 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
             'Вероятность' = $detection.Probability
             'Дней с изменения' = if ($procInfo) { Get-DaysSinceLastWrite $procInfo.LastWriteTime } else { 999 }
             'Автор' = '976hk'
+        }
+        
+        $results += $result
+        
+        if ($procPath -and $procPath -match '\.exe$|\.jar$') {
+            $htmlResults += $result
         }
     }
 }
@@ -389,7 +336,7 @@ foreach ($path in $scanPaths) {
             $detection = Get-RiskLevel -InputString "$($_.Name) $($_.FullName)"
             
             if ($detection.Risk -ne 'Unknown') {
-                $results += [PSCustomObject]@{
+                $result = [PSCustomObject]@{
                     'Тип' = 'Файл'
                     'Имя' = $_.Name
                     'Путь' = $_.FullName
@@ -401,6 +348,12 @@ foreach ($path in $scanPaths) {
                     'Вероятность' = $detection.Probability
                     'Дней с изменения' = Get-DaysSinceLastWrite $_.LastWriteTime
                     'Автор' = '976hk'
+                }
+                
+                $results += $result
+                
+                if ($_.Extension.ToLower() -in @('.jar', '.exe')) {
+                    $htmlResults += $result
                 }
             }
         }
@@ -433,7 +386,7 @@ foreach ($mcPath in $minecraftPaths) {
             $detection = Get-RiskLevel -InputString "$($_.Name) $($_.FullName)"
             
             if ($detection.Risk -ne 'Unknown') {
-                $results += [PSCustomObject]@{
+                $result = [PSCustomObject]@{
                     'Тип' = 'Minecraft'
                     'Имя' = $_.Name
                     'Путь' = $_.FullName
@@ -445,6 +398,12 @@ foreach ($mcPath in $minecraftPaths) {
                     'Вероятность' = $detection.Probability
                     'Дней с изменения' = Get-DaysSinceLastWrite $_.LastWriteTime
                     'Автор' = '976hk'
+                }
+                
+                $results += $result
+                
+                if ($_.Extension.ToLower() -in @('.jar', '.exe', '.cfg', '.json', '.txt')) {
+                    $htmlResults += $result
                 }
             }
         }
@@ -458,7 +417,7 @@ Get-ChildItem -Path "$env:Temp", "$env:AppData\Local\Temp" -File -Filter "*.dll"
     $detection = Get-RiskLevel -InputString "$($_.Name) $($_.FullName)"
     
     if ($detection.Risk -ne 'Unknown') {
-        $results += [PSCustomObject]@{
+        $result = [PSCustomObject]@{
             'Тип' = 'DLL Инжект'
             'Имя' = $_.Name
             'Путь' = $_.FullName
@@ -471,6 +430,9 @@ Get-ChildItem -Path "$env:Temp", "$env:AppData\Local\Temp" -File -Filter "*.dll"
             'Дней с изменения' = Get-DaysSinceLastWrite $_.LastWriteTime
             'Автор' = '976hk'
         }
+        
+        $results += $result
+        $htmlResults += $result
     }
 }
 
@@ -499,7 +461,7 @@ foreach ($regPath in $registryPaths) {
                 $detection = Get-RiskLevel -InputString "$($_.Name) $($_.Value)"
                 
                 if ($detection.Risk -ne 'Unknown') {
-                    $results += [PSCustomObject]@{
+                    $result = [PSCustomObject]@{
                         'Тип' = 'Реестр'
                         'Имя' = $_.Name
                         'Путь' = $_.Value
@@ -512,6 +474,8 @@ foreach ($regPath in $registryPaths) {
                         'Дней с изменения' = 999
                         'Автор' = '976hk'
                     }
+                    
+                    $results += $result
                 }
             }
         }
@@ -547,7 +511,7 @@ Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
             $servicePath = $null
         }
         
-        $results += [PSCustomObject]@{
+        $result = [PSCustomObject]@{
             'Тип' = 'Служба'
             'Имя' = $serviceName
             'Путь' = $displayName
@@ -560,6 +524,8 @@ Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
             'Дней с изменения' = 999
             'Автор' = '976hk'
         }
+        
+        $results += $result
     }
 }
 
@@ -590,7 +556,7 @@ Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
         $detection = Get-RiskLevel -InputString "$procName $procPath"
         
         if ($detection.Risk -ne 'Unknown') {
-            $results += [PSCustomObject]@{
+            $result = [PSCustomObject]@{
                 'Тип' = 'Сеть'
                 'Имя' = $procName
                 'Путь' = "$($_.LocalAddress):$($_.LocalPort) -> $($_.RemoteAddress):$($_.RemotePort)"
@@ -603,6 +569,8 @@ Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
                 'Дней с изменения' = 999
                 'Автор' = '976hk'
             }
+            
+            $results += $result
         }
     }
 }
@@ -614,7 +582,7 @@ Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
     $detection = Get-RiskLevel -InputString "$($_.TaskName) $($_.TaskPath)"
     
     if ($detection.Risk -ne 'Unknown') {
-        $results += [PSCustomObject]@{
+        $result = [PSCustomObject]@{
             'Тип' = 'Задача'
             'Имя' = $_.TaskName
             'Путь' = $_.TaskPath
@@ -627,6 +595,8 @@ Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
             'Дней с изменения' = 999
             'Автор' = '976hk'
         }
+        
+        $results += $result
     }
 }
 
@@ -644,7 +614,7 @@ if (Test-Path $hostsPath) {
         foreach ($line in $suspiciousHosts) {
             $detection = Get-RiskLevel -InputString $line
             
-            $results += [PSCustomObject]@{
+            $result = [PSCustomObject]@{
                 'Тип' = 'Hosts'
                 'Имя' = 'hosts'
                 'Путь' = $hostsPath
@@ -657,6 +627,8 @@ if (Test-Path $hostsPath) {
                 'Дней с изменения' = Get-DaysSinceLastWrite (Get-Item $hostsPath).LastWriteTime
                 'Автор' = '976hk'
             }
+            
+            $results += $result
         }
     }
 }
@@ -664,20 +636,19 @@ if (Test-Path $hostsPath) {
 Show-Progress -Percent 100 -Message "Сканирование завершено!"
 Write-Host ""
 
-# СОРТИРОВКА: сначала свежие (≤14 дней), затем по вероятности
-$criticalResults = $results | Where-Object { 
+$criticalResults = $htmlResults | Where-Object { 
     $_.Риск -eq 'Critical' -and $_.'Дней с изменения' -le 14 
 } | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
 
-$highResults = $results | Where-Object { 
+$highResults = $htmlResults | Where-Object { 
     $_.Риск -eq 'High' -and $_.'Дней с изменения' -le 14 
 } | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
 
-$suspiciousResults = $results | Where-Object { 
+$suspiciousResults = $htmlResults | Where-Object { 
     $_.Риск -eq 'Suspicious' -and $_.'Дней с изменения' -le 14 
 } | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
 
-$oldResults = $results | Where-Object { 
+$oldResults = $htmlResults | Where-Object { 
     $_.'Дней с изменения' -gt 14 -and $_.Риск -ne 'System' 
 } | Sort-Object -Property 'Дней с изменения' -Descending
 
@@ -686,7 +657,8 @@ $systemResults = $results | Where-Object {
 }
 
 Write-Host "=== Результаты сканирования ===" -ForegroundColor Cyan
-Write-Host "Всего найдено: $($results.Count)" -ForegroundColor White
+Write-Host "Всего найдено (CSV): $($results.Count)" -ForegroundColor White
+Write-Host "В HTML отчёте: $($htmlResults.Count)" -ForegroundColor White
 Write-Host "Свежие критические (≤14 дней): $($criticalResults.Count)" -ForegroundColor Red
 Write-Host "Свежие высокого риска (≤14 дней): $($highResults.Count)" -ForegroundColor DarkRed
 Write-Host "Свежие подозрительные (≤14 дней): $($suspiciousResults.Count)" -ForegroundColor Yellow
@@ -695,46 +667,6 @@ Write-Host "Системных служб: $($systemResults.Count)" -ForegroundC
 Write-Host ""
 
 if ($results.Count -gt 0) {
-    if ($criticalResults.Count -gt 0) {
-        Write-Host "=== СВЕЖИЕ КРИТИЧЕСКИЕ (≤14 дней) ===" -ForegroundColor Red
-        $criticalResults | Format-Table -AutoSize | Out-String | Write-Host
-        Write-Host ""
-    }
-    
-    if ($highResults.Count -gt 0) {
-        Write-Host "=== СВЕЖИЕ ВЫСОКОГО РИСКА (≤14 дней) ===" -ForegroundColor DarkRed
-        $highResults | Format-Table -AutoSize | Out-String | Write-Host
-        Write-Host ""
-    }
-    
-    if ($suspiciousResults.Count -gt 0) {
-        Write-Host "=== СВЕЖИЕ ПОДОЗРИТЕЛЬНЫЕ (≤14 дней) ===" -ForegroundColor Yellow
-        $suspiciousResults | Format-Table -AutoSize | Out-String | Write-Host
-        Write-Host ""
-    }
-    
-    if ($oldResults.Count -gt 0) {
-        Write-Host "=== СТАРЫЕ НАХОДКИ (более 14 дней) ===" -ForegroundColor Gray
-        $oldResults | Format-Table -AutoSize | Out-String | Write-Host
-        Write-Host ""
-    }
-    
-    if ($systemResults.Count -gt 0) {
-        Write-Host "=== СИСТЕМНЫЕ СЛУЖБЫ ===" -ForegroundColor DarkGray
-        $systemResults | Select-Object Тип, Имя, Путь, @{
-            N='Состояние'
-            E={
-                switch ($_.Статус) { 
-                    'Running' {'ЗАПУЩЕНА'} 
-                    'Stopped' {'ОСТАНОВЛЕНА'} 
-                    'Paused' {'ПРИОСТАНОВЛЕНА'} 
-                    default {$_.Статус} 
-                }
-            }
-        }, Детали | Format-Table -AutoSize | Out-String | Write-Host
-        Write-Host ""
-    }
-    
     Write-Host "`nВведите путь для сохранения (Enter для рабочего стола):" -ForegroundColor Yellow
     $OutputPath = Read-Host
     
@@ -909,7 +841,7 @@ h2 {
     <span style='color: #ffff00;'>Свежие подозрительные: $($suspiciousResults.Count)</span>
     <span style='color: #888888;'>Старые: $($oldResults.Count)</span>
     <span style='color: #666666;'>Системные: $($systemResults.Count)</span>
-    <span style='color: #ffffff;'>Всего: $($results.Count)</span>
+    <span style='color: #ffffff;'>Всего: $($htmlResults.Count)</span>
 </div>
 "@
         
