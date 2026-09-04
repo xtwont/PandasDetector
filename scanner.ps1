@@ -187,7 +187,7 @@ function Get-RiskLevel {
     }
     
     foreach ($pattern in $CriticalPatterns) {
-        if (Is-ExactWordMatch -Text $lowerInput -Word $pattern) {
+        if ($lowerInput -match [regex]::Escape($pattern.ToLower())) {
             $foundPatterns += $pattern
             $probability += 15
         }
@@ -209,7 +209,7 @@ function Get-RiskLevel {
     }
     
     foreach ($pattern in $HighPatterns) {
-        if (Is-ExactWordMatch -Text $lowerInput -Word $pattern) {
+        if ($lowerInput -match [regex]::Escape($pattern.ToLower())) {
             $foundPatterns += $pattern
             $probability += 10
         }
@@ -231,7 +231,7 @@ function Get-RiskLevel {
     }
     
     foreach ($pattern in $SuspiciousPatterns) {
-        if (Is-ExactWordMatch -Text $lowerInput -Word $pattern) {
+        if ($lowerInput -match [regex]::Escape($pattern.ToLower())) {
             $foundPatterns += $pattern
             $probability += 5
         }
@@ -664,6 +664,7 @@ if (Test-Path $hostsPath) {
 Show-Progress -Percent 100 -Message "Сканирование завершено!"
 Write-Host ""
 
+# СОРТИРОВКА: сначала свежие (≤14 дней), затем по вероятности
 $criticalResults = $results | Where-Object { 
     $_.Риск -eq 'Critical' -and $_.'Дней с изменения' -le 14 
 } | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
