@@ -103,31 +103,27 @@ $SuspiciousPatterns = @(
 )
 
 $SystemServicesToCheck = @(
-    'Appinfo','Sysmain','Pcasvc','Schedule','WinDefend','SecurityHealthService','wuauserv','BITS',
-    'EventLog','DcomLaunch','RpcSs','CryptSvc','Dhcp','DnsCache','LanmanServer','LanmanWorkstation',
-    'Netman','NlaSvc','PlugPlay','Power','ProfSvc','SamSs','SENS','ShellHWDetection','Spooler',
-    'Themes','Winmgmt','WlanSvc','WpnService','AudioSrv','BFE','BrokerInfrastructure','CDPSvc',
-    'CoreMessagingRegistrar','DeviceInstall','DispBrokerDesktopSvc','Dnscache','DoSvc','DusmSvc',
-    'FontCache','gpsvc','hidserv','IKEEXT','iphlpsvc','KeyIso','LSM','mpssvc','MSDTC','Netlogon',
-    'NetTcpPortSharing','NcbService','Ntfrs','PeerDistSvc','PerfHost','pla','PNRPsvc','p2psvc',
-    'p2pimsvc','QWAVE','RasAuto','RasMan','RemoteAccess','RemoteRegistry','RpcLocator','SCardSvr',
-    'SCPolicySvc','SDRSVC','seclogon','SENS','SharedAccess','smphost','SNMPTRAP','stisvc','StorSvc',
-    'SysMain','TabletInputService','TapiSrv','TermService','TrkWks','TrustedInstaller','UI0Detect',
-    'UmRdpService','upnphost','VaultSvc','vds','W32Time','WbioSrvc','Wecsvc','WEPHOSTSVC','wercplsupport',
-    'WerSvc','WiaRpc','WinHttpAutoProxySvc','WinRM','WmiApSrv','workfolderssvc','WPDBusEnum','wscsvc'
+    'Appinfo','Sysmain','Pcasvc','DPS'
 )
 
-$allowedExtensions = @('.jar', '.exe', '.dll', '.bat', '.cmd', '.ps1', '.vbs', '.msi', '.zip', '.rar', '.7z', '.json', '.cfg', '.txt', '.log', '.dat', '.properties', '.yml', '.yaml', '.xml', '.class', '.java', '.py', '.js', '.lua', '.dll', '.so', '.dylib')
+$allowedExtensions = @(
+    '.jar', '.exe', '.dll', '.bat', '.cmd', '.ps1', '.vbs', '.msi', 
+    '.zip', '.rar', '.7z', '.json', '.cfg', '.txt', '.log', '.dat', 
+    '.properties', '.yml', '.yaml', '.xml', '.class', '.java', '.py', '.js', '.lua'
+)
 
 $whitelistPatterns = @(
-    'fabric', 'fabricloader', 'fabric-api', 'fabric.mod', 'fabricmod', 'quilt', 'quiltloader',
-    'forge', 'neoforge', 'optifine', 'sodium', 'lithium', 'phosphor', 'iris', 'sildurs',
-    'complementary', 'bsl', 'seus', 'continuum', 'realistico', 'modernarch', 'faithful',
-    'vanillatweaks', 'minimap', 'journeymap', 'xaeros', 'jei', 'rei', 'emi', 'wthit',
-    'jade', 'hwyla', 'theoneprobe', 'top', 'ftb', 'curseforge', 'modrinth', 'multimc',
-    'prism', 'polyMC', 'gdlauncher', 'atlauncher', 'technic', 'voidlauncher', 'tlauncher',
-    'minecraft', 'java', 'javaw', 'javaws', 'launcher', 'mojang', 'microsoft', 'windows',
-    'system32', 'syswow64', 'program files', 'programdata', 'appdata', 'users'
+    'fabric', 'fabricloader', 'fabric-api', 'fabric.mod', 'fabricmod', 
+    'quilt', 'quiltloader', 'forge', 'neoforge', 'optifine', 
+    'sodium', 'lithium', 'phosphor', 'iris', 'sildurs',
+    'complementary', 'bsl', 'seus', 'continuum', 'realistico', 
+    'modernarch', 'faithful', 'vanillatweaks', 'minimap', 'journeymap', 
+    'xaeros', 'jei', 'rei', 'emi', 'wthit', 'jade', 'hwyla', 
+    'theoneprobe', 'top', 'ftb', 'curseforge', 'modrinth', 'multimc',
+    'prism', 'polyMC', 'gdlauncher', 'atlauncher', 'technic', 
+    'voidlauncher', 'tlauncher', 'minecraft', 'java', 'javaw', 'javaws', 
+    'launcher', 'mojang', 'microsoft', 'windows', 'system32', 'syswow64', 
+    'program files', 'programdata', 'appdata', 'users'
 )
 
 $allPatterns = @()
@@ -138,7 +134,9 @@ $allPatterns += $SuspiciousPatterns
 function Is-ExactWordMatch {
     param([string]$Text, [string]$Word)
     
-    if (-not $Text -or -not $Word) { return $false }
+    if (-not $Text -or -not $Word) { 
+        return $false 
+    }
     
     $lowerText = $Text.ToLower()
     $lowerWord = $Word.ToLower()
@@ -150,7 +148,9 @@ function Is-ExactWordMatch {
 function Is-Whitelisted {
     param([string]$InputString)
     
-    if (-not $InputString) { return $false }
+    if (-not $InputString) { 
+        return $false 
+    }
     
     $lowerInput = $InputString.ToLower()
     
@@ -165,14 +165,25 @@ function Is-Whitelisted {
 
 function Get-RiskLevel {
     param([string]$InputString)
-    if (-not $InputString) { return @{ Risk = 'Unknown'; Reason = ''; Probability = 0 } }
+    
+    if (-not $InputString) { 
+        return @{ 
+            Risk = 'Unknown'
+            Reason = ''
+            Probability = 0 
+        } 
+    }
     
     $lowerInput = $InputString.ToLower()
     $foundPatterns = @()
     $probability = 0
     
     if (Is-Whitelisted -InputString $lowerInput) {
-        return @{ Risk = 'Unknown'; Reason = ''; Probability = 0 }
+        return @{ 
+            Risk = 'Unknown'
+            Reason = ''
+            Probability = 0 
+        }
     }
     
     foreach ($pattern in $CriticalPatterns) {
@@ -190,7 +201,11 @@ function Get-RiskLevel {
     }
     
     if ($foundPatterns.Count -gt 0) {
-        return @{ Risk = 'Critical'; Reason = "Совпадение с $($foundPatterns -join ', ')"; Probability = $probability }
+        return @{ 
+            Risk = 'Critical'
+            Reason = "Совпадение с $($foundPatterns -join ', ')"
+            Probability = $probability 
+        }
     }
     
     foreach ($pattern in $HighPatterns) {
@@ -208,7 +223,11 @@ function Get-RiskLevel {
     }
     
     if ($foundPatterns.Count -gt 0) {
-        return @{ Risk = 'High'; Reason = "Совпадение с $($foundPatterns -join ', ')"; Probability = $probability }
+        return @{ 
+            Risk = 'High'
+            Reason = "Совпадение с $($foundPatterns -join ', ')"
+            Probability = $probability 
+        }
     }
     
     foreach ($pattern in $SuspiciousPatterns) {
@@ -226,31 +245,59 @@ function Get-RiskLevel {
     }
     
     if ($foundPatterns.Count -gt 0) {
-        return @{ Risk = 'Suspicious'; Reason = "Совпадение с $($foundPatterns -join ', ')"; Probability = $probability }
+        return @{ 
+            Risk = 'Suspicious'
+            Reason = "Совпадение с $($foundPatterns -join ', ')"
+            Probability = $probability 
+        }
     }
     
-    return @{ Risk = 'Unknown'; Reason = ''; Probability = 0 }
+    return @{ 
+        Risk = 'Unknown'
+        Reason = ''
+        Probability = 0 
+    }
 }
 
 function Format-LastWriteTime {
     param($LastWriteTime)
-    if ($null -eq $LastWriteTime) { return "Неизвестно" }
+    
+    if ($null -eq $LastWriteTime) { 
+        return "Неизвестно" 
+    }
+    
     $timeDiff = (Get-Date) - $LastWriteTime
-    if ($timeDiff.TotalMinutes -lt 1) { return "только что" }
-    elseif ($timeDiff.TotalHours -lt 1) { return "$([math]::Floor($timeDiff.TotalMinutes)) мин. назад" }
-    elseif ($timeDiff.TotalDays -lt 1) { return "$([math]::Floor($timeDiff.TotalHours)) ч. $($timeDiff.Minutes) мин. назад" }
-    elseif ($timeDiff.TotalDays -lt 30) { return "$([math]::Floor($timeDiff.TotalDays)) дн. $([math]::Floor($timeDiff.TotalHours % 24)) ч. назад" }
-    else { return "$([math]::Floor($timeDiff.TotalDays / 30)) мес. $([math]::Floor($timeDiff.TotalDays % 30)) дн. назад" }
+    
+    if ($timeDiff.TotalMinutes -lt 1) { 
+        return "только что" 
+    }
+    elseif ($timeDiff.TotalHours -lt 1) { 
+        return "$([math]::Floor($timeDiff.TotalMinutes)) мин. назад" 
+    }
+    elseif ($timeDiff.TotalDays -lt 1) { 
+        return "$([math]::Floor($timeDiff.TotalHours)) ч. $($timeDiff.Minutes) мин. назад" 
+    }
+    elseif ($timeDiff.TotalDays -lt 30) { 
+        return "$([math]::Floor($timeDiff.TotalDays)) дн. $([math]::Floor($timeDiff.TotalHours % 24)) ч. назад" 
+    }
+    else { 
+        return "$([math]::Floor($timeDiff.TotalDays / 30)) мес. $([math]::Floor($timeDiff.TotalDays % 30)) дн. назад" 
+    }
 }
 
 function Show-Progress {
     param($Percent, $Message)
+    
     $barLength = 40
     $filled = [math]::Round($Percent / 100 * $barLength)
     $empty = $barLength - $filled
     $bar = "[" + ("█" * $filled) + ("░" * $empty) + "]"
+    
     Write-Host "`r$bar $Percent% $Message" -NoNewline -ForegroundColor Cyan
-    if ($Percent -eq 100) { Write-Host "" }
+    
+    if ($Percent -eq 100) { 
+        Write-Host "" 
+    }
 }
 
 function Test-Admin {
@@ -261,40 +308,13 @@ function Test-Admin {
 
 function Get-DaysSinceLastWrite {
     param($LastWriteTime)
-    if ($null -eq $LastWriteTime) { return 999 }
+    
+    if ($null -eq $LastWriteTime) { 
+        return 999 
+    }
+    
     $timeDiff = (Get-Date) - $LastWriteTime
     return [math]::Floor($timeDiff.TotalDays)
-}
-
-function Get-FileHash {
-    param([string]$FilePath)
-    try {
-        $hash = Get-FileHash -Path $FilePath -Algorithm MD5 -ErrorAction SilentlyContinue
-        if ($hash) { return $hash.Hash }
-    } catch {
-        return 'N/A'
-    }
-    return 'N/A'
-}
-
-function Get-ProcessInfo {
-    param($ProcessName)
-    $info = @{}
-    try {
-        $proc = Get-Process -Name $ProcessName -ErrorAction SilentlyContinue | Select-Object -First 1
-        if ($proc) {
-            $info.Path = $proc.Path
-            $info.Id = $proc.Id
-            $info.StartTime = $proc.StartTime
-            $info.CPU = $proc.CPU
-            $info.Memory = $proc.WorkingSet64
-            $info.Description = $proc.Description
-            $info.Product = $proc.Product
-        }
-    } catch {
-        $info = @{}
-    }
-    return $info
 }
 
 $results = @()
@@ -313,9 +333,11 @@ if (-not $isAdmin) {
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование процессов..."
+
 Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
     $procName = $_.Name
     $procPath = $null
+    
     try {
         $procPath = $_.Path
     } catch {
@@ -323,13 +345,13 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
     }
     
     $detection = Get-RiskLevel -InputString "$procName $procPath"
+    
     if ($detection.Risk -ne 'Unknown') {
         $procInfo = $null
+        
         if ($procPath) {
             $procInfo = Get-Item -Path $procPath -ErrorAction SilentlyContinue
         }
-        
-        $fileHash = Get-FileHash -FilePath $procPath
         
         $results += [PSCustomObject]@{
             'Тип' = 'Процесс'
@@ -342,7 +364,6 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
             'Риск' = $detection.Risk
             'Вероятность' = $detection.Probability
             'Дней с изменения' = if ($procInfo) { Get-DaysSinceLastWrite $procInfo.LastWriteTime } else { 999 }
-            'MD5' = $fileHash
             'Автор' = '976hk'
         }
     }
@@ -350,6 +371,7 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование файлов..."
+
 $scanPaths = @(
     "$env:UserProfile\Downloads",
     "$env:UserProfile\Desktop",
@@ -365,9 +387,8 @@ foreach ($path in $scanPaths) {
             $_.Extension.ToLower() -in $allowedExtensions
         } | ForEach-Object {
             $detection = Get-RiskLevel -InputString "$($_.Name) $($_.FullName)"
+            
             if ($detection.Risk -ne 'Unknown') {
-                $fileHash = Get-FileHash -FilePath $_.FullName
-                
                 $results += [PSCustomObject]@{
                     'Тип' = 'Файл'
                     'Имя' = $_.Name
@@ -379,7 +400,6 @@ foreach ($path in $scanPaths) {
                     'Риск' = $detection.Risk
                     'Вероятность' = $detection.Probability
                     'Дней с изменения' = Get-DaysSinceLastWrite $_.LastWriteTime
-                    'MD5' = $fileHash
                     'Автор' = '976hk'
                 }
             }
@@ -389,6 +409,7 @@ foreach ($path in $scanPaths) {
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование Minecraft..."
+
 $minecraftPaths = @(
     "$env:AppData\.minecraft\mods",
     "$env:AppData\.minecraft\versions",
@@ -404,13 +425,14 @@ $minecraftPaths = @(
 foreach ($mcPath in $minecraftPaths) {
     if (Test-Path $mcPath) {
         Get-ChildItem -Path $mcPath -Recurse -Depth 7 -ErrorAction SilentlyContinue | Where-Object {
-            if ($_.PSIsContainer) { return $true }
+            if ($_.PSIsContainer) { 
+                return $true 
+            }
             return $_.Extension.ToLower() -in $allowedExtensions
         } | ForEach-Object {
             $detection = Get-RiskLevel -InputString "$($_.Name) $($_.FullName)"
+            
             if ($detection.Risk -ne 'Unknown') {
-                $fileHash = Get-FileHash -FilePath $_.FullName
-                
                 $results += [PSCustomObject]@{
                     'Тип' = 'Minecraft'
                     'Имя' = $_.Name
@@ -422,7 +444,6 @@ foreach ($mcPath in $minecraftPaths) {
                     'Риск' = $detection.Risk
                     'Вероятность' = $detection.Probability
                     'Дней с изменения' = Get-DaysSinceLastWrite $_.LastWriteTime
-                    'MD5' = $fileHash
                     'Автор' = '976hk'
                 }
             }
@@ -432,11 +453,11 @@ foreach ($mcPath in $minecraftPaths) {
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование DLL..."
+
 Get-ChildItem -Path "$env:Temp", "$env:AppData\Local\Temp" -File -Filter "*.dll" -Recurse -Depth 3 -ErrorAction SilentlyContinue | ForEach-Object {
     $detection = Get-RiskLevel -InputString "$($_.Name) $($_.FullName)"
+    
     if ($detection.Risk -ne 'Unknown') {
-        $fileHash = Get-FileHash -FilePath $_.FullName
-        
         $results += [PSCustomObject]@{
             'Тип' = 'DLL Инжект'
             'Имя' = $_.Name
@@ -448,7 +469,6 @@ Get-ChildItem -Path "$env:Temp", "$env:AppData\Local\Temp" -File -Filter "*.dll"
             'Риск' = $detection.Risk
             'Вероятность' = $detection.Probability
             'Дней с изменения' = Get-DaysSinceLastWrite $_.LastWriteTime
-            'MD5' = $fileHash
             'Автор' = '976hk'
         }
     }
@@ -456,6 +476,7 @@ Get-ChildItem -Path "$env:Temp", "$env:AppData\Local\Temp" -File -Filter "*.dll"
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование реестра..."
+
 $registryPaths = @(
     "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run",
     "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce",
@@ -470,11 +491,13 @@ $registryPaths = @(
 foreach ($regPath in $registryPaths) {
     if (Test-Path $regPath) {
         $regItems = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
+        
         if ($regItems) {
             $regItems.PSObject.Properties | Where-Object {
                 $_.Name -notmatch '^PS' -and $_.Value
             } | ForEach-Object {
                 $detection = Get-RiskLevel -InputString "$($_.Name) $($_.Value)"
+                
                 if ($detection.Risk -ne 'Unknown') {
                     $results += [PSCustomObject]@{
                         'Тип' = 'Реестр'
@@ -487,7 +510,6 @@ foreach ($regPath in $registryPaths) {
                         'Риск' = $detection.Risk
                         'Вероятность' = $detection.Probability
                         'Дней с изменения' = 999
-                        'MD5' = 'N/A'
                         'Автор' = '976hk'
                     }
                 }
@@ -498,6 +520,7 @@ foreach ($regPath in $registryPaths) {
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование служб..."
+
 Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
     $serviceName = $_.Name
     $displayName = $_.DisplayName
@@ -505,11 +528,16 @@ Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
     $detection = Get-RiskLevel -InputString "$displayName $serviceName"
     
     if ($serviceName -in $SystemServicesToCheck) {
-        $detection = @{ Risk = 'System'; Reason = "Системная служба Windows: $serviceName"; Probability = 0 }
+        $detection = @{ 
+            Risk = 'System'
+            Reason = "Системная служба Windows: $serviceName"
+            Probability = 0 
+        }
     }
     
     if ($detection.Risk -ne 'Unknown') {
         $servicePath = $null
+        
         try {
             $serviceInfo = Get-CimInstance Win32_Service -Filter "Name='$serviceName'" -ErrorAction SilentlyContinue
             if ($serviceInfo) {
@@ -530,7 +558,6 @@ Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
             'Риск' = $detection.Risk
             'Вероятность' = $detection.Probability
             'Дней с изменения' = 999
-            'MD5' = 'N/A'
             'Автор' = '976hk'
         }
     }
@@ -538,11 +565,13 @@ Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование сети..."
+
 Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
     $_.State -eq "Established" -and $_.OwningProcess -ne 0
 } | ForEach-Object {
     $procName = $null
     $procPath = $null
+    
     try {
         $proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
         if ($proc) {
@@ -559,6 +588,7 @@ Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
     
     if ($procName) {
         $detection = Get-RiskLevel -InputString "$procName $procPath"
+        
         if ($detection.Risk -ne 'Unknown') {
             $results += [PSCustomObject]@{
                 'Тип' = 'Сеть'
@@ -571,7 +601,6 @@ Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
                 'Риск' = $detection.Risk
                 'Вероятность' = $detection.Probability
                 'Дней с изменения' = 999
-                'MD5' = 'N/A'
                 'Автор' = '976hk'
             }
         }
@@ -580,8 +609,10 @@ Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование задач..."
+
 Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
     $detection = Get-RiskLevel -InputString "$($_.TaskName) $($_.TaskPath)"
+    
     if ($detection.Risk -ne 'Unknown') {
         $results += [PSCustomObject]@{
             'Тип' = 'Задача'
@@ -594,7 +625,6 @@ Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
             'Риск' = $detection.Risk
             'Вероятность' = $detection.Probability
             'Дней с изменения' = 999
-            'MD5' = 'N/A'
             'Автор' = '976hk'
         }
     }
@@ -602,15 +632,18 @@ Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
 
 $currentStep++
 Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование хостов..."
+
 $hostsPath = "$env:SystemRoot\System32\drivers\etc\hosts"
 if (Test-Path $hostsPath) {
     $hostsContent = Get-Content $hostsPath -ErrorAction SilentlyContinue
     $suspiciousHosts = $hostsContent | Where-Object {
         $_ -match $patternRegex -and $_ -notmatch '^\s*#'
     }
+    
     if ($suspiciousHosts) {
         foreach ($line in $suspiciousHosts) {
             $detection = Get-RiskLevel -InputString $line
+            
             $results += [PSCustomObject]@{
                 'Тип' = 'Hosts'
                 'Имя' = 'hosts'
@@ -622,7 +655,6 @@ if (Test-Path $hostsPath) {
                 'Риск' = $detection.Risk
                 'Вероятность' = $detection.Probability
                 'Дней с изменения' = Get-DaysSinceLastWrite (Get-Item $hostsPath).LastWriteTime
-                'MD5' = Get-FileHash -FilePath $hostsPath
                 'Автор' = '976hk'
             }
         }
@@ -632,11 +664,25 @@ if (Test-Path $hostsPath) {
 Show-Progress -Percent 100 -Message "Сканирование завершено!"
 Write-Host ""
 
-$criticalResults = $results | Where-Object { $_.Риск -eq 'Critical' -and $_.'Дней с изменения' -le 14 } | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
-$highResults = $results | Where-Object { $_.Риск -eq 'High' -and $_.'Дней с изменения' -le 14 } | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
-$suspiciousResults = $results | Where-Object { $_.Риск -eq 'Suspicious' -and $_.'Дней с изменения' -le 14 } | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
-$oldResults = $results | Where-Object { $_.'Дней с изменения' -gt 14 -and $_.Риск -ne 'System' } | Sort-Object -Property 'Дней с изменения' -Descending
-$systemResults = $results | Where-Object { $_.Риск -eq 'System' }
+$criticalResults = $results | Where-Object { 
+    $_.Риск -eq 'Critical' -and $_.'Дней с изменения' -le 14 
+} | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
+
+$highResults = $results | Where-Object { 
+    $_.Риск -eq 'High' -and $_.'Дней с изменения' -le 14 
+} | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
+
+$suspiciousResults = $results | Where-Object { 
+    $_.Риск -eq 'Suspicious' -and $_.'Дней с изменения' -le 14 
+} | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
+
+$oldResults = $results | Where-Object { 
+    $_.'Дней с изменения' -gt 14 -and $_.Риск -ne 'System' 
+} | Sort-Object -Property 'Дней с изменения' -Descending
+
+$systemResults = $results | Where-Object { 
+    $_.Риск -eq 'System' 
+}
 
 Write-Host "=== Результаты сканирования ===" -ForegroundColor Cyan
 Write-Host "Всего найдено: $($results.Count)" -ForegroundColor White
@@ -674,16 +720,29 @@ if ($results.Count -gt 0) {
     
     if ($systemResults.Count -gt 0) {
         Write-Host "=== СИСТЕМНЫЕ СЛУЖБЫ ===" -ForegroundColor DarkGray
-        $systemResults | Select-Object Тип, Имя, Путь, @{N='Состояние';E={switch ($_.Статус) { 'Running' {'Запущена'} 'Stopped' {'Остановлена'} 'Paused' {'Приостановлена'} default {$_.Статус} }}}, Детали | Format-Table -AutoSize | Out-String | Write-Host
+        $systemResults | Select-Object Тип, Имя, Путь, @{
+            N='Состояние'
+            E={
+                switch ($_.Статус) { 
+                    'Running' {'ЗАПУЩЕНА'} 
+                    'Stopped' {'ОСТАНОВЛЕНА'} 
+                    'Paused' {'ПРИОСТАНОВЛЕНА'} 
+                    default {$_.Статус} 
+                }
+            }
+        }, Детали | Format-Table -AutoSize | Out-String | Write-Host
         Write-Host ""
     }
     
     Write-Host "`nВведите путь для сохранения (Enter для рабочего стола):" -ForegroundColor Yellow
     $OutputPath = Read-Host
+    
     if ([string]::IsNullOrWhiteSpace($OutputPath)) {
         $OutputPath = [Environment]::GetFolderPath("Desktop")
     }
+    
     $OutputPath = $OutputPath.Trim('"').Trim("'")
+    
     if (-not (Test-Path -Path $OutputPath)) {
         try { 
             New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null 
@@ -798,6 +857,46 @@ h2 {
     margin-right: 20px;
     font-weight: bold;
 }
+.service-summary {
+    background: #2d2d2d;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 10px 0;
+    display: flex;
+    gap: 30px;
+}
+.service-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.status-dot {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: inline-block;
+}
+.status-dot.running {
+    background: #00ff00;
+    box-shadow: 0 0 10px #00ff00;
+}
+.status-dot.stopped {
+    background: #ff0000;
+    box-shadow: 0 0 10px #ff0000;
+}
+.status-label {
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+.service-running {
+    border-left: 4px solid #00ff00;
+    background: #1a2a1a;
+}
+.service-stopped {
+    border-left: 4px solid #ff0000;
+    background: #2a1a1a;
+}
 </style>
 </head>
 <body>
@@ -815,8 +914,16 @@ h2 {
         
         if ($criticalResults.Count -gt 0) {
             $html += "<div class='critical'><h2>🔴 Свежие критические находки ($($criticalResults.Count))</h2>"
+            
             foreach ($item in $criticalResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
+                $probabilityClass = if ($item.Вероятность -ge 90) { 
+                    'probability-high' 
+                } elseif ($item.Вероятность -ge 70) { 
+                    'probability-medium' 
+                } else { 
+                    'probability-low' 
+                }
+                
                 $html += @"
 <div class='item'>
 <h3>$($item.Имя)</h3>
@@ -824,18 +931,26 @@ h2 {
 <p class='reason'>$($item.Детали)</p>
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
 <p class='details'>Статус: $($item.Статус)</p>
-<p class='details'>MD5: $($item.MD5)</p>
 <p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
 </div>
 "@
             }
+            
             $html += "</div>"
         }
         
         if ($highResults.Count -gt 0) {
             $html += "<div class='high'><h2>🟠 Свежие находки высокого риска ($($highResults.Count))</h2>"
+            
             foreach ($item in $highResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
+                $probabilityClass = if ($item.Вероятность -ge 90) { 
+                    'probability-high' 
+                } elseif ($item.Вероятность -ge 70) { 
+                    'probability-medium' 
+                } else { 
+                    'probability-low' 
+                }
+                
                 $html += @"
 <div class='item'>
 <h3>$($item.Имя)</h3>
@@ -843,18 +958,26 @@ h2 {
 <p class='reason'>$($item.Детали)</p>
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
 <p class='details'>Статус: $($item.Статус)</p>
-<p class='details'>MD5: $($item.MD5)</p>
 <p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
 </div>
 "@
             }
+            
             $html += "</div>"
         }
         
         if ($suspiciousResults.Count -gt 0) {
             $html += "<div class='suspicious'><h2>🟡 Свежие подозрительные находки ($($suspiciousResults.Count))</h2>"
+            
             foreach ($item in $suspiciousResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
+                $probabilityClass = if ($item.Вероятность -ge 90) { 
+                    'probability-high' 
+                } elseif ($item.Вероятность -ge 70) { 
+                    'probability-medium' 
+                } else { 
+                    'probability-low' 
+                }
+                
                 $html += @"
 <div class='item'>
 <h3>$($item.Имя)</h3>
@@ -862,18 +985,28 @@ h2 {
 <p class='reason'>$($item.Детали)</p>
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
 <p class='details'>Статус: $($item.Статус)</p>
-<p class='details'>MD5: $($item.MD5)</p>
 <p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
 </div>
 "@
             }
+            
             $html += "</div>"
         }
         
         if ($oldResults.Count -gt 0) {
             $html += "<div class='old'><h2>⚪ Старые находки (более 14 дней) ($($oldResults.Count))</h2>"
+            
             foreach ($item in $oldResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } elseif ($item.Вероятность -ge 40) { 'probability-low' } else { 'probability-none' }
+                $probabilityClass = if ($item.Вероятность -ge 90) { 
+                    'probability-high' 
+                } elseif ($item.Вероятность -ge 70) { 
+                    'probability-medium' 
+                } elseif ($item.Вероятность -ge 40) { 
+                    'probability-low' 
+                } else { 
+                    'probability-none' 
+                }
+                
                 $html += @"
 <div class='item'>
 <h3>$($item.Имя)</h3>
@@ -881,38 +1014,64 @@ h2 {
 <p class='reason'>$($item.Детали)</p>
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
 <p class='details'>Статус: $($item.Статус)</p>
-<p class='details'>MD5: $($item.MD5)</p>
 <p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
 </div>
 "@
             }
+            
             $html += "</div>"
         }
         
         if ($systemResults.Count -gt 0) {
             $html += "<div class='system'><h2>⚙️ Системные службы ($($systemResults.Count))</h2>"
+            
+            $runningCount = ($systemResults | Where-Object { $_.Статус -eq 'Running' }).Count
+            $stoppedCount = ($systemResults | Where-Object { $_.Статус -ne 'Running' }).Count
+            
+            $html += @"
+<div class='service-summary'>
+    <div class='service-status'>
+        <span class='status-dot running'></span>
+        <span class='status-label'>Запущено: $runningCount</span>
+    </div>
+    <div class='service-status'>
+        <span class='status-dot stopped'></span>
+        <span class='status-label'>Остановлено: $stoppedCount</span>
+    </div>
+</div>
+"@
+            
             foreach ($item in $systemResults) {
+                $isRunning = $item.Статус -eq 'Running'
+                $statusIcon = if ($isRunning) { '✅' } else { '❌' }
+                $statusClass = if ($isRunning) { 'service-running' } else { 'service-stopped' }
                 $statusText = switch ($item.Статус) {
-                    'Running' { 'Запущена' }
-                    'Stopped' { 'Остановлена' }
-                    'Paused' { 'Приостановлена' }
+                    'Running' { 'ЗАПУЩЕНА' }
+                    'Stopped' { 'ОСТАНОВЛЕНА' }
+                    'Paused' { 'ПРИОСТАНОВЛЕНА' }
                     default { $item.Статус }
                 }
+                
                 $html += @"
-<div class='item'>
-<h3>$($item.Имя)</h3>
+<div class='item $statusClass'>
+<h3>$statusIcon $($item.Имя)</h3>
 <p>Путь: <span class='path'>$($item.Путь)</span></p>
 <p class='reason'>$($item.Детали)</p>
-<p class='details'>Состояние: $statusText</p>
+<p class='details'>Состояние: <strong>$statusText</strong></p>
 </div>
 "@
             }
+            
             $html += "</div>"
         }
         
         $html += "</body></html>"
         $html | Out-File -FilePath $htmlFile -Encoding UTF8
         Write-Host "✅ HTML: $htmlFile" -ForegroundColor Green
+        
+        if ($htmlFile -and (Test-Path $htmlFile)) {
+            Start-Process $htmlFile
+        }
         
     } catch {
         Write-Host "❌ Ошибка при сохранении: $($_.Exception.Message)" -ForegroundColor Red
