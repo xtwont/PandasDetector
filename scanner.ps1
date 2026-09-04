@@ -1,4 +1,3 @@
-# Паттерны читов и инжектов
 $CheatPatterns = @(
     'Vape','VapeLite','LiquidBounce','FDPClient','Rise','Tenacity','Novoline','Astolfo','ZeroDay','Exhibition',
     'DortWare','MoonX','Juul','Jigsaw','Wurst','Impact','Sigma','Sigma4','Sigma5','Phobos','Ares',
@@ -56,7 +55,7 @@ $whitelistPatterns = @(
     'xaeros', 'jei', 'rei', 'emi', 'wthit', 'jade', 'hwyla', 
     'theoneprobe', 'top', 'ftb', 'curseforge', 'modrinth', 'multimc',
     'prism', 'polyMC', 'gdlauncher', 'atlauncher', 'technic', 
-    'voidlauncher', 'tlauncher', 'minecraft', 'java', 'javaw', 'javaws', 
+    'voidlauncher', 'tlauncher', 'java', 'javaw', 'javaws', 
     'launcher', 'mojang', 'microsoft', 'windows', 'system32', 'syswow64', 
     'program files', 'programdata', 'appdata', 'users',
     'intel', 'nvidia', 'amd', 'realtek', 'steam', 'discord', 'yandex',
@@ -123,7 +122,7 @@ $whitelistPatterns = @(
     'projector', 'projectors', 'hyper', 'vm', 'virtual', 'virtualization',
     'power', 'shell', 'explorer', 'sihost', 'taskhost', 'conhost',
     'dwm', 'csrss', 'smss', 'wininit', 'winlogon', 'lsass',
-    'fontdrvhost', 'fontdrvhost.exe', 'svchost', 'dllhost', 'wmiprvse'
+    'fontdrvhost', 'svchost', 'dllhost', 'wmiprvse'
 )
 
 $allPatterns = @()
@@ -137,6 +136,12 @@ function Is-Whitelisted {
     }
     
     $lowerInput = $InputString.ToLower()
+    
+    # НЕ проверяем whitelist для файлов с расширениями .jar и .exe
+    # Эти файлы всегда проверяем на читы
+    if ($lowerInput -match '\.jar$|\.jar\s|\.exe$|\.exe\s|\.dll$|\.dll\s') {
+        return $false
+    }
     
     foreach ($pattern in $whitelistPatterns) {
         if ($lowerInput -match [regex]::Escape($pattern)) {
@@ -310,7 +315,7 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
         
         $results += $result
         
-        if ($procPath -and $procPath -match '\.exe$|\.jar$') {
+        if ($procPath -and $procPath -match '\.exe$|\.jar$|\.dll$') {
             $htmlResults += $result
         }
     }
@@ -352,7 +357,7 @@ foreach ($path in $scanPaths) {
                 
                 $results += $result
                 
-                if ($_.Extension.ToLower() -in @('.jar', '.exe')) {
+                if ($_.Extension.ToLower() -in @('.jar', '.exe', '.dll')) {
                     $htmlResults += $result
                 }
             }
