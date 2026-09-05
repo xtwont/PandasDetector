@@ -36,6 +36,29 @@ $CheatPatterns = @(
     'inject','loader','bypass','autoclicker','macro','exploit','crack','unban','stealth','undetect'
 )
 
+$CheatCodePatterns = @{
+    'FreeCam' = @('freecam', 'free_cam', 'FreeCamera', 'camera', 'spectator', 'noclip', 'no_clip', 'fly', 'flight')
+    'XRay' = @('xray', 'x_ray', 'X-Ray', 'ore', 'ores', 'mineral', 'minerals', 'diamond', 'emerald', 'gold_ore', 'iron_ore')
+    'AutoTotem' = @('totem', 'autototem', 'auto_totem', 'offhand', 'off_hand', 'inventorytotem', 'InventoryTotem')
+    'KillAura' = @('killaura', 'kill_aura', 'KillAura', 'aura', 'aimbot', 'aim_bot', 'target', 'attack', 'combat')
+    'Reach' = @('reach', 'range', 'distance', 'extend', 'hitbox', 'hit_box')
+    'Velocity' = @('velocity', 'knockback', 'knock_back', 'antikb', 'anti_kb', 'antiknockback')
+    'Scaffold' = @('scaffold', 'bridge', 'auto_bridge', 'autobridge', 'block_place', 'blockplace')
+    'Nuker' = @('nuker', 'auto_break', 'autobreak', 'break_blocks', 'breakblocks', 'destroy_blocks')
+    'ESP' = @('esp', 'wallhack', 'wall_hack', 'tracers', 'glow', 'highlight', 'outline')
+    'Speed' = @('speed', 'bhop', 'bunnyhop', 'bunny_hop', 'strafe', 'sprint', 'accelerate')
+    'Fly' = @('fly', 'flight', 'hover', 'levitate', 'float')
+    'NoFall' = @('nofall', 'no_fall', 'fall_damage', 'falldamage', 'antifall')
+    'AutoClicker' = @('autoclicker', 'auto_clicker', 'autoclick', 'auto_click', 'cps', 'click_speed')
+    'ChestStealer' = @('stealer', 'cheststealer', 'chest_stealer', 'autosteal', 'auto_steal', 'loot')
+    'InventoryManager' = @('inventory', 'invmanager', 'inv_manager', 'autosort', 'auto_sort', 'sort')
+    'Spammer' = @('spammer', 'spam', 'chat_spam', 'chatspam', 'auto_message', 'automessage')
+    'AntiAFK' = @('antiafk', 'anti_afk', 'afk', 'auto_afk', 'idle')
+    'Blink' = @('blink', 'lag_switch', 'lagswitch', 'packet', 'delay')
+    'Jesus' = @('jesus', 'water_walk', 'waterwalk', 'walk_water', 'walkwater')
+    'Phase' = @('phase', 'clip', 'vclip', 'hclip', 'teleport', 'tp')
+}
+
 $SystemServicesToCheck = @(
     'Appinfo','Sysmain','Pcasvc','DPS'
 )
@@ -149,6 +172,12 @@ $allPatterns += $CheatPatterns
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 Add-Type -AssemblyName System.Security
 
+$script:TotalFilesScanned = 0
+$script:CurrentFileBeingScanned = ""
+$script:CurrentScanType = ""
+$script:CurrentPathIndex = 0
+$script:TotalPaths = 0
+
 function Test-Signature {
     param([string]$FilePath)
     
@@ -186,15 +215,16 @@ function Test-JarContent {
         if (-not (Test-Path $FilePath)) { return @() }
         if ([System.IO.Path]::GetExtension($FilePath).ToLower() -ne '.jar') { return @() }
         
-        $foundPatterns = @()
+        $foundCheats = @()
         $zip = [System.IO.Compression.ZipFile]::OpenRead($FilePath)
         
         try {
             foreach ($entry in $zip.Entries) {
                 $entryName = $entry.FullName.ToLower()
-                $detection = Get-RiskLevel -InputString $entryName
+                
+                $detection = Get-RiskLevel -InputString $entryName -FilePath $entryName
                 if ($detection.Risk -ne 'Unknown') {
-                    $foundPatterns += $entryName
+                    $foundCheats += "Файл: $entryName"
                 }
                 
                 if ($entry.Name -eq 'MANIFEST.MF') {
@@ -206,7 +236,35 @@ function Test-JarContent {
                     
                     $detection = Get-RiskLevel -InputString $content
                     if ($detection.Risk -ne 'Unknown') {
-                        $foundPatterns += "MANIFEST: $content"
+                        $foundCheats += "MANIFEST: $content"
+                    }
+                }
+                
+                if ($entry.Name -like '*.class' -or $entry.Name -like '*.java' -or $entry.Name -like '*.txt' -or $entry.Name -like '*.json' -or $entry.Name -like '*.cfg') {
+                    try {
+                        $stream = $entry.Open()
+                        $reader = New-Object System.IO.StreamReader($stream)
+                        $content = $reader.ReadToEnd()
+                        $reader.Close()
+                        $stream.Close()
+                        
+                        $lowerContent = $content.ToLower()
+                        
+                        foreach ($cheatName in $CheatCodePatterns.Keys) {
+                            $patterns = $CheatCodePatterns[$cheatName]
+                            $matchCount = 0
+                            
+                            foreach ($pattern in $patterns) {
+                                if ($lowerContent -match [regex]::Escape($pattern.ToLower())) {
+                                    $matchCount++
+                                }
+                            }
+                            
+                            if ($matchCount -ge 2) {
+                                $foundCheats += "Содержимое $($entry.Name) имеет совпадение с читом '$cheatName' ($matchCount совпадений)"
+                            }
+                        }
+                    } catch {
                     }
                 }
             }
@@ -214,7 +272,7 @@ function Test-JarContent {
             $zip.Dispose()
         }
         
-        return $foundPatterns
+        return $foundCheats | Select-Object -Unique
     } catch {
         return @()
     }
@@ -391,22 +449,28 @@ function Format-LastWriteTime {
 }
 
 function Show-Progress {
-    param($Percent, $Message, $StepInfo)
+    param($Percent, $Message)
     
     $barLength = 40
     $filled = [math]::Round($Percent / 100 * $barLength)
     $empty = $barLength - $filled
     $bar = "[" + ("█" * $filled) + ("░" * $empty) + "]"
     
-    if ($StepInfo) {
-        Write-Host "`r$bar $Percent% $Message $StepInfo" -NoNewline -ForegroundColor Cyan
-    } else {
-        Write-Host "`r$bar $Percent% $Message" -NoNewline -ForegroundColor Cyan
+    $fileInfo = ""
+    if ($script:CurrentFileBeingScanned) {
+        $fileInfo = " | $($script:CurrentFileBeingScanned)"
     }
+    
+    Write-Host "`r$bar $Percent% $Message [$($script:TotalFilesScanned) файлов]$fileInfo" -NoNewline -ForegroundColor Cyan
     
     if ($Percent -eq 100) { 
         Write-Host "" 
     }
+}
+
+function Update-ProgressDisplay {
+    $percent = [math]::Round(($script:CurrentStep / $script:TotalSteps) * 100)
+    Show-Progress -Percent $percent -Message $script:CurrentScanType
 }
 
 function Test-Admin {
@@ -448,15 +512,15 @@ function Scan-DirectoryWithProgress {
         $files = @()
     }
     
-    $fileCount = $files.Count
-    $processedCount = 0
+    $script:CurrentScanType = $ScanType
+    $script:CurrentPathIndex = $CurrentIndex
+    $script:TotalPaths = $TotalItems
     
     foreach ($file in $files) {
-        $processedCount++
-        $progressPercent = [math]::Round(($processedCount / [math]::Max(1, $fileCount)) * 100)
-        $stepInfo = "($CurrentIndex/$TotalItems) [$processedCount/$fileCount] $($file.Name)"
+        $script:TotalFilesScanned++
+        $script:CurrentFileBeingScanned = "$($file.Name)"
         
-        Show-Progress -Percent $progressPercent -Message "Сканирование $ScanType" -StepInfo $stepInfo
+        Update-ProgressDisplay
         
         $detection = Get-RiskLevel -InputString "$($file.Name) $($file.FullName)" -FilePath $file.FullName
         
@@ -478,7 +542,7 @@ function Scan-DirectoryWithProgress {
             
             $combinedReason = $detection.Reason
             if ($jarFindings.Count -gt 0) {
-                $combinedReason += " | JAR содержимое: $($jarFindings -join ', ')"
+                $combinedReason += " | JAR: $($jarFindings -join '; ')"
             }
             
             $signatureInfo = if ($null -ne $signatureValid) {
@@ -517,8 +581,8 @@ function Scan-DirectoryWithProgress {
 
 $results = @()
 $htmlResults = @()
-$totalSteps = 12
-$currentStep = 0
+$script:TotalSteps = 12
+$script:CurrentStep = 0
 $isAdmin = Test-Admin
 
 Write-Host "`n════════════════════════════════════════════" -ForegroundColor DarkGray
@@ -535,8 +599,9 @@ if ([string]::IsNullOrWhiteSpace($env:VIRUSTOTAL_API_KEY)) {
     Write-Host "   `$env:VIRUSTOTAL_API_KEY = 'ваш_ключ'`n" -ForegroundColor Gray
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование процессов..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование процессов"
+Update-ProgressDisplay
 
 Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
     $procName = $_.Name
@@ -547,6 +612,9 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
     } catch {
         $procPath = $null
     }
+    
+    $script:CurrentFileBeingScanned = "$procName"
+    Update-ProgressDisplay
     
     $detection = Get-RiskLevel -InputString "$procName $procPath" -FilePath $procPath
     
@@ -602,8 +670,9 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование файлов..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование файлов"
+Update-ProgressDisplay
 
 $scanPaths = @(
     "$env:UserProfile\Downloads",
@@ -628,8 +697,9 @@ foreach ($path in $scanPaths) {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование Minecraft..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование Minecraft"
+Update-ProgressDisplay
 
 $minecraftPaths = @(
     "$env:AppData\.minecraft\mods",
@@ -657,8 +727,9 @@ foreach ($mcPath in $minecraftPaths) {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование DLL..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование DLL"
+Update-ProgressDisplay
 
 $dllPaths = @("$env:Temp", "$env:AppData\Local\Temp")
 $dllIndex = 0
@@ -667,15 +738,12 @@ foreach ($dllPath in $dllPaths) {
     $dllIndex++
     if (Test-Path $dllPath) {
         $dllFiles = Get-ChildItem -Path $dllPath -File -Filter "*.dll" -Recurse -Depth 3 -ErrorAction SilentlyContinue
-        $dllCount = $dllFiles.Count
-        $dllProcessed = 0
         
         foreach ($dllFile in $dllFiles) {
-            $dllProcessed++
-            $progressPercent = [math]::Round(($dllProcessed / [math]::Max(1, $dllCount)) * 100)
-            $stepInfo = "($dllIndex/$($dllPaths.Count)) [$dllProcessed/$dllCount] $($dllFile.Name)"
+            $script:TotalFilesScanned++
+            $script:CurrentFileBeingScanned = "$($dllFile.Name)"
             
-            Show-Progress -Percent $progressPercent -Message "Сканирование DLL" -StepInfo $stepInfo
+            Update-ProgressDisplay
             
             $detection = Get-RiskLevel -InputString "$($dllFile.Name) $($dllFile.FullName)" -FilePath $dllFile.FullName
             
@@ -718,8 +786,9 @@ foreach ($dllPath in $dllPaths) {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование реестра..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование реестра"
+Update-ProgressDisplay
 
 $registryPaths = @(
     "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run",
@@ -767,8 +836,9 @@ foreach ($regPath in $registryPaths) {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование служб..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование служб"
+Update-ProgressDisplay
 
 Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
     $serviceName = $_.Name
@@ -817,8 +887,9 @@ Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование сети..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование сети"
+Update-ProgressDisplay
 
 Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
     $_.State -eq "Established" -and $_.OwningProcess -ne 0
@@ -866,8 +937,9 @@ Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование задач..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование задач"
+Update-ProgressDisplay
 
 Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
     $detection = Get-RiskLevel -InputString "$($_.TaskName) $($_.TaskPath)"
@@ -894,8 +966,9 @@ Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Сканирование хостов..."
+$script:CurrentStep++
+$script:CurrentScanType = "Сканирование хостов"
+Update-ProgressDisplay
 
 $hostsPath = "$env:SystemRoot\System32\drivers\etc\hosts"
 if (Test-Path $hostsPath) {
@@ -930,12 +1003,14 @@ if (Test-Path $hostsPath) {
     }
 }
 
-$currentStep++
-Show-Progress -Percent ([math]::Round($currentStep / $totalSteps * 100)) -Message "Анализ результатов..."
+$script:CurrentStep++
+$script:CurrentScanType = "Анализ результатов"
+Update-ProgressDisplay
 
 Start-Sleep -Seconds 2
 
-Show-Progress -Percent 100 -Message "Сканирование завершено!"
+$script:CurrentStep = $script:TotalSteps
+Show-Progress -Percent 100 -Message "Сканирование завершено"
 Write-Host ""
 
 $processResults = $results | Where-Object { $_.Тип -eq 'Процесс' }
@@ -963,6 +1038,7 @@ $systemResults = $serviceResults | Where-Object {
 }
 
 Write-Host "=== Результаты сканирования ===" -ForegroundColor Cyan
+Write-Host "Всего просканировано файлов: $($script:TotalFilesScanned)" -ForegroundColor White
 Write-Host "Всего найдено (CSV): $($results.Count)" -ForegroundColor White
 Write-Host "В HTML отчёте: $($htmlResults.Count)" -ForegroundColor White
 Write-Host "Свежие критические (≤14 дней): $($criticalResults.Count)" -ForegroundColor Red
@@ -1080,6 +1156,13 @@ h2 {
     margin: 5px 0;
     font-style: italic;
 }
+.jar-findings {
+    color: #ff6600;
+    margin: 5px 0;
+    padding: 5px;
+    background: #1a0a00;
+    border-radius: 3px;
+}
 .probability-high {
     color: #ff0000;
     font-weight: bold;
@@ -1177,7 +1260,7 @@ h2 {
     <span style='color: #ff6600;'>Свежие высокого риска: $($highResults.Count)</span>
     <span style='color: #ffff00;'>Свежие подозрительные: $($suspiciousResults.Count)</span>
     <span style='color: #888888;'>Старые: $($oldResults.Count)</span>
-    <span style='color: #ffffff;'>Всего: $($results.Count)</span>
+    <span style='color: #ffffff;'>Всего просканировано: $($script:TotalFilesScanned)</span>
 </div>
 "@
         
@@ -1238,11 +1321,18 @@ h2 {
                 
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
+                $jarInfo = ""
+                if ($item.Детали -match 'JAR:') {
+                    $jarFindings = $item.Детали -split 'JAR: ' | Select-Object -Last 1
+                    $jarInfo = "<div class='jar-findings'>🔍 $jarFindings</div>"
+                }
+                
                 $html += @"
 <div class='item'>
 <h3>$($item.Имя)</h3>
 <p>Тип: $($item.Тип) | Путь: <span class='path'>$($item.Путь)</span></p>
 <p class='reason'>$($item.Детали)</p>
+$jarInfo
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
 <p class='details'>Статус: $($item.Статус)</p>
 <p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
@@ -1270,11 +1360,18 @@ h2 {
                 
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
+                $jarInfo = ""
+                if ($item.Детали -match 'JAR:') {
+                    $jarFindings = $item.Детали -split 'JAR: ' | Select-Object -Last 1
+                    $jarInfo = "<div class='jar-findings'>🔍 $jarFindings</div>"
+                }
+                
                 $html += @"
 <div class='item'>
 <h3>$($item.Имя)</h3>
 <p>Тип: $($item.Тип) | Путь: <span class='path'>$($item.Путь)</span></p>
 <p class='reason'>$($item.Детали)</p>
+$jarInfo
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
 <p class='details'>Статус: $($item.Статус)</p>
 <p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
@@ -1302,11 +1399,18 @@ h2 {
                 
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
+                $jarInfo = ""
+                if ($item.Детали -match 'JAR:') {
+                    $jarFindings = $item.Детали -split 'JAR: ' | Select-Object -Last 1
+                    $jarInfo = "<div class='jar-findings'>🔍 $jarFindings</div>"
+                }
+                
                 $html += @"
 <div class='item'>
 <h3>$($item.Имя)</h3>
 <p>Тип: $($item.Тип) | Путь: <span class='path'>$($item.Путь)</span></p>
 <p class='reason'>$($item.Детали)</p>
+$jarInfo
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
 <p class='details'>Статус: $($item.Статус)</p>
 <p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
@@ -1336,11 +1440,18 @@ h2 {
                 
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
+                $jarInfo = ""
+                if ($item.Детали -match 'JAR:') {
+                    $jarFindings = $item.Детали -split 'JAR: ' | Select-Object -Last 1
+                    $jarInfo = "<div class='jar-findings'>🔍 $jarFindings</div>"
+                }
+                
                 $html += @"
 <div class='item'>
 <h3>$($item.Имя)</h3>
 <p>Тип: $($item.Тип) | Путь: <span class='path'>$($item.Путь)</span></p>
 <p class='reason'>$($item.Детали)</p>
+$jarInfo
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
 <p class='details'>Статус: $($item.Статус)</p>
 <p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
