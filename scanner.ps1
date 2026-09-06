@@ -71,6 +71,7 @@ $allowedExtensions = @(
 
 $whitelistPatterns = @(
     'fabric', 'fabricloader', 'fabric-api', 'fabric.mod', 'fabricmod', 
+    'fabric-loader', 'fabric-resource-loader', 'fabric_loader',
     'quilt', 'quiltloader', 'forge', 'neoforge', 'optifine', 
     'sodium', 'lithium', 'phosphor', 'iris', 'sildurs',
     'complementary', 'bsl', 'seus', 'continuum', 'realistico', 
@@ -145,7 +146,18 @@ $whitelistPatterns = @(
     'power', 'shell', 'explorer', 'sihost', 'taskhost', 'conhost',
     'dwm', 'csrss', 'smss', 'wininit', 'winlogon', 'lsass',
     'fontdrvhost', 'svchost', 'wmiprvse',
-    'customskinloader', 'skinloader', 'customskin'
+    'customskinloader', 'skinloader', 'customskin',
+    'fmlloader', 'fml_loader'
+)
+
+$SystemProcessPatterns = @(
+    'system', 'idle', 'registry', 'smss', 'csrss', 'wininit', 'winlogon',
+    'services', 'lsass', 'fontdrvhost', 'svchost', 'dllhost', 'wmiprvse',
+    'sihost', 'taskhostw', 'conhost', 'explorer', 'dwm', 'shell',
+    'runtimebroker', 'searchindexer', 'searchui', 'startmenuexperiencehost',
+    'textinputhost', 'applicationframehost', 'shellexperiencehost',
+    'securityhealthservice', 'securityhealthsystray', 'msmpeng',
+    'nissrv', 'defender', 'antimalware', 'mpcmdrun'
 )
 
 $exactPatterns = @(
@@ -328,6 +340,22 @@ function Is-Whitelisted {
     return $false
 }
 
+function Is-SystemProcess {
+    param([string]$ProcessName)
+    
+    if (-not $ProcessName) { return $false }
+    
+    $lowerName = $ProcessName.ToLower()
+    
+    foreach ($pattern in $SystemProcessPatterns) {
+        if ($lowerName -match [regex]::Escape($pattern)) {
+            return $true
+        }
+    }
+    
+    return $false
+}
+
 function Get-RiskLevel {
     param([string]$InputString, [string]$FilePath = "")
     
@@ -353,7 +381,6 @@ function Get-RiskLevel {
     }
     
     $isExactMatch = $false
-    $exactMatchCount = 0
     
     foreach ($pattern in $exactPatterns) {
         if ($lowerInput -match $pattern) {
@@ -361,7 +388,6 @@ function Get-RiskLevel {
             if ($patternName -notin $foundPatterns) {
                 $foundPatterns += $patternName
                 $probability += 45
-                $exactMatchCount++
                 $isExactMatch = $true
             }
         }
@@ -552,7 +578,9 @@ function Scan-DirectoryWithProgress {
 }
 
 $results = @()
-$htmlResults = @()
+$processResults = @()
+$injectResults = @()
+$serviceResults = @()
 $isAdmin = Test-Admin
 
 Write-Host "`n════════════════════════════════════════════" -ForegroundColor DarkGray
@@ -573,7 +601,11 @@ $script:CurrentStep = 1
 $script:CurrentScanType = "Сканирование процессов"
 Update-ProgressDisplay
 
-Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
+$allProcesses = Get-Process -ErrorAction SilentlyContinue
+$processCount = $allProcesses.Count
+$useWhitelistForProcesses = $processCount -gt 50
+
+$allProcesses | ForEach-Object {
     $procName = $_.Name
     $procPath = $null
     
@@ -586,58 +618,51 @@ Get-Process -ErrorAction SilentlyContinue | ForEach-Object {
     $script:CurrentFileBeingScanned = $procName
     Update-ProgressDisplay
     
-    $detection = Get-RiskLevel -InputString "$procName $procPath" -FilePath $procPath
+    $isSystemProc = Is-SystemProcess -ProcessName $procName
     
-    if ($detection.Risk -ne 'Unknown') {
-        $procInfo = $null
-        
-        if ($procPath) {
-            $procInfo = Get-Item -Path $procPath -ErrorAction SilentlyContinue
-        }
-        
-        $signatureValid = $null
-        $fileHash = $null
-        $vtResults = $null
-        
-        if ($procPath -and (Test-Path $procPath)) {
-            $signatureValid = Test-Signature -FilePath $procPath
-            $fileHash = Get-FileHashSHA256 -FilePath $procPath
-            $vtResults = Check-VirusTotal -FilePath $procPath
-        }
-        
-        $signatureInfo = if ($null -ne $signatureValid) {
-            if ($signatureValid) { "Подписано" } else { "Не подписано" }
-        } else { "N/A" }
-        
-        $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
-        
-        $vtInfo = if ($vtResults) {
-            "Mal:$($vtResults.Malicious) Susp:$($vtResults.Suspicious) Harm:$($vtResults.Harmless)"
-        } else { "N/A" }
-        
-        $result = [PSCustomObject]@{
-            'Тип' = 'Процесс'
-            'Имя' = $procName
-            'Путь' = if ($procPath) { $procPath } else { 'N/A' }
-            'PID' = $_.Id
-            'Детали' = $detection.Reason
-            'Последнее изменение' = if ($procInfo) { Format-LastWriteTime $procInfo.LastWriteTime } else { 'Неизвестно' }
-            'Статус' = 'Работает'
-            'Риск' = $detection.Risk
-            'Вероятность' = $detection.Probability
-            'Дней с изменения' = if ($procInfo) { Get-DaysSinceLastWrite $procInfo.LastWriteTime } else { 999 }
-            'Подпись' = $signatureInfo
-            'SHA256' = $hashInfo
-            'VirusTotal' = $vtInfo
-            'Автор' = '976hk'
-        }
-        
-        $results += $result
-        
-        if ($procPath -and $procPath -match '\.exe$|\.jar$|\.dll$') {
-            $htmlResults += $result
-        }
+    if ($useWhitelistForProcesses -and $isSystemProc) {
+        return
     }
+    
+    $signatureValid = $null
+    $fileHash = $null
+    $vtResults = $null
+    
+    if ($procPath -and (Test-Path $procPath)) {
+        $signatureValid = Test-Signature -FilePath $procPath
+        $fileHash = Get-FileHashSHA256 -FilePath $procPath
+        $vtResults = Check-VirusTotal -FilePath $procPath
+    }
+    
+    $signatureInfo = if ($null -ne $signatureValid) {
+        if ($signatureValid) { "Подписано" } else { "Не подписано" }
+    } else { "N/A" }
+    
+    $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
+    
+    $vtInfo = if ($vtResults) {
+        "Mal:$($vtResults.Malicious) Susp:$($vtResults.Suspicious) Harm:$($vtResults.Harmless)"
+    } else { "N/A" }
+    
+    $result = [PSCustomObject]@{
+        'Тип' = 'Процесс'
+        'Имя' = $procName
+        'Путь' = if ($procPath) { $procPath } else { 'N/A' }
+        'PID' = $_.Id
+        'Детали' = if ($isSystemProc) { "Системный процесс" } else { "Запущенный процесс" }
+        'Последнее изменение' = 'N/A'
+        'Статус' = 'Работает'
+        'Риск' = 'Info'
+        'Вероятность' = 0
+        'Дней с изменения' = 999
+        'Подпись' = $signatureInfo
+        'SHA256' = $hashInfo
+        'VirusTotal' = $vtInfo
+        'Автор' = '976hk'
+    }
+    
+    $results += $result
+    $processResults += $result
 }
 
 $script:CurrentStep = 2
@@ -660,10 +685,6 @@ foreach ($path in $scanPaths) {
     
     foreach ($item in $scannedItems) {
         $results += $item
-        
-        if ($item.Путь -match '\.jar$|\.exe$|\.dll$') {
-            $htmlResults += $item
-        }
     }
 }
 
@@ -690,10 +711,6 @@ foreach ($mcPath in $minecraftPaths) {
     
     foreach ($item in $scannedItems) {
         $results += $item
-        
-        if ($item.Путь -match '\.jar$|\.exe$|\.cfg$|\.json$|\.txt$') {
-            $htmlResults += $item
-        }
     }
 }
 
@@ -713,43 +730,39 @@ foreach ($dllPath in $dllPaths) {
             
             Update-ProgressDisplay
             
-            $detection = Get-RiskLevel -InputString "$($dllFile.Name) $($dllFile.FullName)" -FilePath $dllFile.FullName
+            $signatureValid = Test-Signature -FilePath $dllFile.FullName
+            $fileHash = Get-FileHashSHA256 -FilePath $dllFile.FullName
+            $vtResults = Check-VirusTotal -FilePath $dllFile.FullName
             
-            if ($detection.Risk -ne 'Unknown') {
-                $signatureValid = Test-Signature -FilePath $dllFile.FullName
-                $fileHash = Get-FileHashSHA256 -FilePath $dllFile.FullName
-                $vtResults = Check-VirusTotal -FilePath $dllFile.FullName
-                
-                $signatureInfo = if ($null -ne $signatureValid) {
-                    if ($signatureValid) { "Подписано" } else { "Не подписано" }
-                } else { "N/A" }
-                
-                $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
-                
-                $vtInfo = if ($vtResults) {
-                    "Mal:$($vtResults.Malicious) Susp:$($vtResults.Suspicious) Harm:$($vtResults.Harmless)"
-                } else { "N/A" }
-                
-                $result = [PSCustomObject]@{
-                    'Тип' = 'DLL Инжект'
-                    'Имя' = $dllFile.Name
-                    'Путь' = $dllFile.FullName
-                    'PID' = 'N/A'
-                    'Детали' = $detection.Reason
-                    'Последнее изменение' = Format-LastWriteTime $dllFile.LastWriteTime
-                    'Статус' = 'Найден'
-                    'Риск' = $detection.Risk
-                    'Вероятность' = $detection.Probability
-                    'Дней с изменения' = Get-DaysSinceLastWrite $dllFile.LastWriteTime
-                    'Подпись' = $signatureInfo
-                    'SHA256' = $hashInfo
-                    'VirusTotal' = $vtInfo
-                    'Автор' = '976hk'
-                }
-                
-                $results += $result
-                $htmlResults += $result
+            $signatureInfo = if ($null -ne $signatureValid) {
+                if ($signatureValid) { "Подписано" } else { "Не подписано" }
+            } else { "N/A" }
+            
+            $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
+            
+            $vtInfo = if ($vtResults) {
+                "Mal:$($vtResults.Malicious) Susp:$($vtResults.Suspicious) Harm:$($vtResults.Harmless)"
+            } else { "N/A" }
+            
+            $result = [PSCustomObject]@{
+                'Тип' = 'DLL Инжект'
+                'Имя' = $dllFile.Name
+                'Путь' = $dllFile.FullName
+                'PID' = 'N/A'
+                'Детали' = "DLL файл в Temp"
+                'Последнее изменение' = Format-LastWriteTime $dllFile.LastWriteTime
+                'Статус' = 'Найден'
+                'Риск' = 'Info'
+                'Вероятность' = 0
+                'Дней с изменения' = Get-DaysSinceLastWrite $dllFile.LastWriteTime
+                'Подпись' = $signatureInfo
+                'SHA256' = $hashInfo
+                'VirusTotal' = $vtInfo
+                'Автор' = '976hk'
             }
+            
+            $results += $result
+            $injectResults += $result
         }
     }
 }
@@ -808,7 +821,9 @@ $script:CurrentStep = 6
 $script:CurrentScanType = "Сканирование служб"
 Update-ProgressDisplay
 
-Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
+Get-Service -ErrorAction SilentlyContinue | Where-Object {
+    $_.Name -notin @('RpcLocator')
+} | ForEach-Object {
     $serviceName = $_.Name
     $displayName = $_.DisplayName
     
@@ -852,6 +867,7 @@ Get-Service -ErrorAction SilentlyContinue | ForEach-Object {
         }
         
         $results += $result
+        $serviceResults += $result
     }
 }
 
@@ -977,9 +993,7 @@ $script:CurrentFileBeingScanned = ""
 Update-ProgressDisplay
 Write-Host ""
 
-$processResults = $results | Where-Object { $_.Тип -eq 'Процесс' }
-$serviceResults = $results | Where-Object { $_.Тип -eq 'Служба' }
-$fileResults = $results | Where-Object { $_.Тип -notin @('Процесс', 'Служба') }
+$fileResults = $results | Where-Object { $_.Тип -notin @('Процесс', 'Служба', 'DLL Инжект') }
 
 $criticalResults = $fileResults | Where-Object { 
     $_.Риск -eq 'Critical' -and $_.'Дней с изменения' -le 14 
@@ -1010,6 +1024,7 @@ Write-Host "Свежие подозрительные (≤14 дней): $($suspi
 Write-Host "Старые (более 14 дней): $($oldResults.Count)" -ForegroundColor Gray
 Write-Host "Системных служб: $($systemResults.Count)" -ForegroundColor DarkGray
 Write-Host "Запущенных процессов: $($processResults.Count)" -ForegroundColor Magenta
+Write-Host "DLL инжектов: $($injectResults.Count)" -ForegroundColor DarkMagenta
 Write-Host ""
 
 if ($results.Count -gt 0) {
@@ -1048,71 +1063,102 @@ body {
     color: #e0e0e0;
     font-family: 'Segoe UI', Arial, sans-serif;
     margin: 20px;
+    font-size: 1.3em;
 }
 h1 {
     color: #00ff00;
     border-bottom: 2px solid #00ff00;
     padding-bottom: 10px;
+    font-size: 2em;
 }
 h2 {
-    margin-top: 30px;
-    padding: 10px;
+    font-size: 1.5em;
+}
+.summary {
+    background: #2d2d2d;
+    padding: 20px;
     border-radius: 5px;
+    margin: 20px 0;
+    font-size: 1.2em;
 }
-.services h2 {
+.summary-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px;
+    margin-bottom: 15px;
+}
+.summary-item {
+    color: #e0e0e0;
+    font-weight: bold;
+}
+.collapsible {
+    background: #2d2d2d;
+    color: #e0e0e0;
+    cursor: pointer;
+    padding: 20px;
+    width: 100%;
+    border: none;
+    text-align: left;
+    outline: none;
+    font-size: 1.3em;
+    border-left: 4px solid #666;
+    border-radius: 3px;
+    margin: 8px 0;
+    transition: 0.3s;
+}
+.collapsible:hover {
+    background: #3d3d3d;
+}
+.collapsible.active {
+    background: #3d3d3d;
+}
+.collapsible:after {
+    content: '\25BC';
+    float: right;
+    font-size: 16px;
+    color: #888;
+}
+.collapsible.active:after {
+    content: '\25B2';
+}
+.collapsible-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
     background: #1a1a1a;
-    color: #666666;
-    border-left: 4px solid #666666;
+    border-radius: 0 0 3px 3px;
 }
-.processes h2 {
-    background: #1a0033;
-    color: #cc66ff;
-    border-left: 4px solid #cc66ff;
-}
-.critical h2 {
-    background: #330000;
-    color: #ff0000;
-    border-left: 4px solid #ff0000;
-}
-.high h2 {
-    background: #331100;
-    color: #ff6600;
-    border-left: 4px solid #ff6600;
-}
-.suspicious h2 {
-    background: #333300;
-    color: #ffff00;
-    border-left: 4px solid #ffff00;
-}
-.old h2 {
-    background: #222222;
-    color: #888888;
-    border-left: 4px solid #888888;
+.collapsible-content.show {
+    max-height: 10000px;
 }
 .item {
     background: #2d2d2d;
     border-left: 4px solid #666;
     padding: 15px;
-    margin: 10px 0;
+    margin: 8px 0;
     border-radius: 3px;
 }
 .item h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     color: #ffffff;
+    font-size: 1.2em;
 }
 .path {
     color: #00ff00;
     font-family: 'Courier New', monospace;
     word-break: break-all;
+    font-size: 1.1em;
 }
 .details {
     color: #cccccc;
     margin: 5px 0;
+    font-size: 1em;
 }
 .reason {
     color: #ff9900;
     margin: 5px 0;
     font-style: italic;
+    font-size: 1em;
 }
 .probability-high {
     color: #ff0000;
@@ -1131,47 +1177,19 @@ h2 {
     color: #888888;
     font-weight: bold;
 }
-.summary {
-    background: #2d2d2d;
-    padding: 15px;
-    border-radius: 5px;
-    margin: 20px 0;
+.tech-info {
+    background: #1a1a1a;
+    padding: 8px 12px;
+    margin: 5px 0;
+    border-radius: 3px;
+    font-size: 1em;
+    color: #888;
 }
-.summary span {
-    margin-right: 20px;
-    font-weight: bold;
+.signed {
+    color: #00ff00;
 }
-.service-summary {
-    background: #2d2d2d;
-    padding: 15px;
-    border-radius: 5px;
-    margin: 10px 0;
-    display: flex;
-    gap: 30px;
-}
-.service-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-.status-dot {
-    width: 20px;
-    height: 20px;
-    border-radius: 50%;
-    display: inline-block;
-}
-.status-dot.running {
-    background: #00ff00;
-    box-shadow: 0 0 10px #00ff00;
-}
-.status-dot.stopped {
-    background: #ff0000;
-    box-shadow: 0 0 10px #ff0000;
-}
-.status-label {
-    color: #ffffff;
-    font-weight: bold;
-    font-size: 1.1em;
+.unsigned {
+    color: #ff0000;
 }
 .service-running {
     border-left: 4px solid #00ff00;
@@ -1181,57 +1199,71 @@ h2 {
     border-left: 4px solid #ff0000;
     background: #2a1a1a;
 }
-.tech-info {
-    background: #1a1a1a;
-    padding: 5px 10px;
-    margin: 5px 0;
-    border-radius: 3px;
-    font-size: 0.9em;
-    color: #888;
-}
-.signed {
-    color: #00ff00;
-}
-.unsigned {
-    color: #ff0000;
-}
 .process-item {
     border-left: 4px solid #cc66ff;
     background: #1a0a2a;
 }
+.inject-item {
+    border-left: 4px solid #ff00ff;
+    background: #1a002a;
+}
+.critical-item {
+    border-left: 4px solid #ff0000;
+    background: #2a0a0a;
+}
+.high-item {
+    border-left: 4px solid #ff6600;
+    background: #2a1a0a;
+}
+.suspicious-item {
+    border-left: 4px solid #ffff00;
+    background: #2a2a0a;
+}
+.old-item {
+    border-left: 4px solid #888888;
+    background: #1a1a1a;
+}
 </style>
+<script>
+function toggleCollapsible(element) {
+    element.classList.toggle('active');
+    var content = element.nextElementSibling;
+    if (content.style.maxHeight && content.style.maxHeight !== '0px') {
+        content.style.maxHeight = '0px';
+        content.classList.remove('show');
+    } else {
+        content.style.maxHeight = content.scrollHeight + 'px';
+        content.classList.add('show');
+    }
+}
+</script>
 </head>
 <body>
 <h1>🐼 Minecraft Cheat Detector Report</h1>
 <p>Автор: 976hk | Дата сканирования: $(Get-Date -Format 'yyyy-MM-dd HH:mm:ss')</p>
 <div class='summary'>
-    <span style='color: #666666;'>Службы: $($serviceResults.Count)</span>
-    <span style='color: #cc66ff;'>Процессы: $($processResults.Count)</span>
-    <span style='color: #ff0000;'>Свежие критические: $($criticalResults.Count)</span>
-    <span style='color: #ff6600;'>Свежие высокого риска: $($highResults.Count)</span>
-    <span style='color: #ffff00;'>Свежие подозрительные: $($suspiciousResults.Count)</span>
-    <span style='color: #888888;'>Старые: $($oldResults.Count)</span>
-    <span style='color: #ffffff;'>Всего просканировано: $($script:TotalFilesScanned)</span>
+    <div class='summary-row'>
+        <span class='summary-item' style='color: #666666;'>⚙️ Службы: $($serviceResults.Count)</span>
+        <span class='summary-item' style='color: #cc66ff;'>🚀 Процессы: $($processResults.Count)</span>
+        <span class='summary-item' style='color: #ff00ff;'>💉 Инжекты: $($injectResults.Count)</span>
+        <span class='summary-item' style='color: #ffffff;'>📊 Всего просканировано: $($script:TotalFilesScanned)</span>
+    </div>
+    <div class='summary-row'>
+        <span class='summary-item' style='color: #ff0000;'>🔴 Свежие критические: $($criticalResults.Count)</span>
+        <span class='summary-item' style='color: #ff6600;'>🟠 Высокого риска: $($highResults.Count)</span>
+        <span class='summary-item' style='color: #ffff00;'>🟡 Подозрительные: $($suspiciousResults.Count)</span>
+        <span class='summary-item' style='color: #888888;'>⚪ Старые: $($oldResults.Count)</span>
+    </div>
 </div>
 "@
         
         if ($serviceResults.Count -gt 0) {
-            $html += "<div class='services'><h2>⚙️ Службы ($($serviceResults.Count))</h2>"
-            
             $runningCount = ($serviceResults | Where-Object { $_.Статус -eq 'Running' }).Count
             $stoppedCount = ($serviceResults | Where-Object { $_.Статус -ne 'Running' }).Count
             
             $html += @"
-<div class='service-summary'>
-    <div class='service-status'>
-        <span class='status-dot running'></span>
-        <span class='status-label'>Запущено: $runningCount</span>
-    </div>
-    <div class='service-status'>
-        <span class='status-dot stopped'></span>
-        <span class='status-label'>Остановлено: $stoppedCount</span>
-    </div>
-</div>
+<button class="collapsible" onclick="toggleCollapsible(this)">⚙️ Службы ($($serviceResults.Count)) — Запущено: $runningCount, Остановлено: $stoppedCount</button>
+<div class="collapsible-content">
 "@
             
             foreach ($item in $serviceResults) {
@@ -1248,7 +1280,7 @@ h2 {
                 $html += @"
 <div class='item $statusClass'>
 <h3>$statusIcon $($item.Имя)</h3>
-<p>Путь: <span class='path'>$($item.Путь)</span></p>
+<p class='path'>$($item.Путь)</p>
 <p class='reason'>$($item.Детали)</p>
 <p class='details'>Состояние: <strong>$statusText</strong></p>
 </div>
@@ -1258,28 +1290,46 @@ h2 {
             $html += "</div>"
         }
         
-        if ($criticalResults.Count -gt 0) {
-            $html += "<div class='critical'><h2>🔴 Свежие критические находки ($($criticalResults.Count))</h2>"
+        if ($injectResults.Count -gt 0) {
+            $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">💉 DLL Инжекты ($($injectResults.Count))</button>
+<div class="collapsible-content">
+"@
             
-            foreach ($item in $criticalResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 
-                    'probability-high' 
-                } elseif ($item.Вероятность -ge 70) { 
-                    'probability-medium' 
-                } else { 
-                    'probability-low' 
-                }
-                
+            foreach ($item in $injectResults) {
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
                 $html += @"
-<div class='item'>
+<div class='item inject-item'>
 <h3>$($item.Имя)</h3>
-<p>Тип: $($item.Тип) | Путь: <span class='path'>$($item.Путь)</span></p>
-<p class='reason'>$($item.Детали)</p>
+<p class='path'>$($item.Путь)</p>
 <p class='details'>Изменен: $($item.'Последнее изменение')</p>
-<p class='details'>Статус: $($item.Статус)</p>
-<p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
+<div class='tech-info'>
+    Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
+</div>
+</div>
+"@
+            }
+            
+            $html += "</div>"
+        }
+        
+        if ($criticalResults.Count -gt 0) {
+            $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">🔴 Свежие критические находки ($($criticalResults.Count))</button>
+<div class="collapsible-content">
+"@
+            
+            foreach ($item in $criticalResults) {
+                $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
+                $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
+                
+                $html += @"
+<div class='item critical-item'>
+<h3>$($item.Имя)</h3>
+<p class='path'>$($item.Путь)</p>
+<p class='reason'>$($item.Детали)</p>
+<p class='details'>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p>
 <div class='tech-info'>
     Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
 </div>
@@ -1291,27 +1341,21 @@ h2 {
         }
         
         if ($highResults.Count -gt 0) {
-            $html += "<div class='high'><h2>🟠 Свежие находки высокого риска ($($highResults.Count))</h2>"
+            $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">🟠 Свежие находки высокого риска ($($highResults.Count))</button>
+<div class="collapsible-content">
+"@
             
             foreach ($item in $highResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 
-                    'probability-high' 
-                } elseif ($item.Вероятность -ge 70) { 
-                    'probability-medium' 
-                } else { 
-                    'probability-low' 
-                }
-                
+                $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
                 $html += @"
-<div class='item'>
+<div class='item high-item'>
 <h3>$($item.Имя)</h3>
-<p>Тип: $($item.Тип) | Путь: <span class='path'>$($item.Путь)</span></p>
+<p class='path'>$($item.Путь)</p>
 <p class='reason'>$($item.Детали)</p>
-<p class='details'>Изменен: $($item.'Последнее изменение')</p>
-<p class='details'>Статус: $($item.Статус)</p>
-<p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
+<p class='details'>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p>
 <div class='tech-info'>
     Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
 </div>
@@ -1323,27 +1367,21 @@ h2 {
         }
         
         if ($suspiciousResults.Count -gt 0) {
-            $html += "<div class='suspicious'><h2>🟡 Свежие подозрительные находки ($($suspiciousResults.Count))</h2>"
+            $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">🟡 Свежие подозрительные находки ($($suspiciousResults.Count))</button>
+<div class="collapsible-content">
+"@
             
             foreach ($item in $suspiciousResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 
-                    'probability-high' 
-                } elseif ($item.Вероятность -ge 70) { 
-                    'probability-medium' 
-                } else { 
-                    'probability-low' 
-                }
-                
+                $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
                 $html += @"
-<div class='item'>
+<div class='item suspicious-item'>
 <h3>$($item.Имя)</h3>
-<p>Тип: $($item.Тип) | Путь: <span class='path'>$($item.Путь)</span></p>
+<p class='path'>$($item.Путь)</p>
 <p class='reason'>$($item.Детали)</p>
-<p class='details'>Изменен: $($item.'Последнее изменение')</p>
-<p class='details'>Статус: $($item.Статус)</p>
-<p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
+<p class='details'>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p>
 <div class='tech-info'>
     Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
 </div>
@@ -1355,29 +1393,21 @@ h2 {
         }
         
         if ($oldResults.Count -gt 0) {
-            $html += "<div class='old'><h2>⚪ Старые находки (более 14 дней) ($($oldResults.Count))</h2>"
+            $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">⚪ Старые находки ($($oldResults.Count))</button>
+<div class="collapsible-content">
+"@
             
             foreach ($item in $oldResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 
-                    'probability-high' 
-                } elseif ($item.Вероятность -ge 70) { 
-                    'probability-medium' 
-                } elseif ($item.Вероятность -ge 40) { 
-                    'probability-low' 
-                } else { 
-                    'probability-none' 
-                }
-                
+                $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } elseif ($item.Вероятность -ge 40) { 'probability-low' } else { 'probability-none' }
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
                 $html += @"
-<div class='item'>
+<div class='item old-item'>
 <h3>$($item.Имя)</h3>
-<p>Тип: $($item.Тип) | Путь: <span class='path'>$($item.Путь)</span></p>
+<p class='path'>$($item.Путь)</p>
 <p class='reason'>$($item.Детали)</p>
-<p class='details'>Изменен: $($item.'Последнее изменение')</p>
-<p class='details'>Статус: $($item.Статус)</p>
-<p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
+<p class='details'>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p>
 <div class='tech-info'>
     Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
 </div>
@@ -1389,29 +1419,19 @@ h2 {
         }
         
         if ($processResults.Count -gt 0) {
-            $html += "<div class='processes'><h2>🚀 Запущенные процессы ($($processResults.Count))</h2>"
+            $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">🚀 Запущенные процессы ($($processResults.Count))</button>
+<div class="collapsible-content">
+"@
             
             foreach ($item in $processResults) {
-                $probabilityClass = if ($item.Вероятность -ge 90) { 
-                    'probability-high' 
-                } elseif ($item.Вероятность -ge 70) { 
-                    'probability-medium' 
-                } elseif ($item.Вероятность -ge 40) { 
-                    'probability-low' 
-                } else { 
-                    'probability-none' 
-                }
-                
                 $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
                 
                 $html += @"
 <div class='item process-item'>
 <h3>$($item.Имя) (PID: $($item.PID))</h3>
-<p>Путь: <span class='path'>$($item.Путь)</span></p>
-<p class='reason'>$($item.Детали)</p>
-<p class='details'>Изменен: $($item.'Последнее изменение')</p>
-<p class='details'>Статус: $($item.Статус)</p>
-<p>Вероятность чит-клиента: <span class='$probabilityClass'>$($item.Вероятность)%</span></p>
+<p class='path'>$($item.Путь)</p>
+<p class='details'>$($item.Детали) | Статус: $($item.Статус)</p>
 <div class='tech-info'>
     Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
 </div>
