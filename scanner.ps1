@@ -213,6 +213,60 @@ $DefaultConfig = @{
             'forge-1.12', 'forge-1.11', 'forge-1.10', 'forge-1.9',
             'forge-1.8', 'forge-1.7', 'forge-1.6', 'forge-1.5'
         )
+        dll_whitelist_patterns = @(
+            'kernel32', 'user32', 'gdi32', 'advapi32', 'shell32', 'ole32',
+            'oleaut32', 'comctl32', 'comdlg32', 'ws2_32', 'wsock32',
+            'winmm', 'wininet', 'winhttp', 'winspool', 'winscard',
+            'crypt32', 'cryptui', 'bcrypt', 'ncrypt', 'secur32',
+            'schannel', 'msvcp', 'msvcr', 'msvcrt', 'vcruntime',
+            'ucrtbase', 'api-ms-win', 'ext-ms-win',
+            'ntdll', 'rpcrt4', 'shlwapi', 'version', 'userenv',
+            'dwmapi', 'd3d9', 'd3d10', 'd3d11', 'd3d12', 'dxgi',
+            'dinput8', 'xinput', 'dsound', 'dmusic',
+            'opengl32', 'glu32', 'glew32', 'glfw3',
+            'vulkan-1', 'vulkaninfo', 'vulkan',
+            'openal32', 'opencl', 'cuda', 'cudart',
+            'nvapi', 'nvapi64', 'nvcuda', 'nvdxgiwrap',
+            'ati', 'amd', 'amdxc', 'atig6', 'aticfx',
+            'intel', 'igfx', 'igd', 'igc',
+            'realtek', 'rtk', 'rtkhdaud',
+            'discord', 'steam', 'gameoverlayrenderer',
+            'overlay', 'obs', 'obs-virtualcam',
+            'java', 'jvm', 'jli', 'nio', 'net', 'zip',
+            'verify', 'attach', 'instrument', 'management',
+            'msvcp140', 'msvcp120', 'msvcp110', 'msvcp100',
+            'vcruntime140', 'vcruntime120', 'vcruntime110',
+            'concrt140', 'msvcr120', 'msvcr110', 'msvcr100',
+            'msvcp90', 'msvcr90', 'msvcp80', 'msvcr80',
+            'msvcp71', 'msvcr71', 'msvcp70', 'msvcr70',
+            'libcrypto', 'libssl', 'libcurl', 'zlib', 'libpng',
+            'libjpeg', 'libtiff', 'libwebp', 'libxml2',
+            'sqlite3', 'sqlite', 'mysql', 'postgres',
+            'python', 'node', 'v8', 'electron',
+            'boost', 'qt', 'wxwidgets', 'gtk', 'sdl',
+            'sfml', 'allegro', 'directx', 'direct3d',
+            'mediafoundation', 'mf', 'mfplat', 'mfreadwrite',
+            'windows.ui', 'windowsapp', 'windows.storage',
+            'windows.data', 'windows.media', 'windows.gaming',
+            'windows.globalization', 'windows.security',
+            'windows.system', 'windows.devices', 'windows.networking',
+            'windows.foundation', 'windows.applicationmodel',
+            'windows.management', 'windows.perception',
+            'windows.ui.xaml', 'windows.ui.composition',
+            'windows.ui.viewmanagement', 'windows.ui.notifications',
+            'windows.ui.shell', 'windows.ui.input',
+            'windows.ui.text', 'windows.ui.core',
+            'windows.ui.windowmanagement', 'windows.ui.popups',
+            'windows.ui.startscreen', 'windows.ui.webui',
+            'windows.ui.xaml.controls', 'windows.ui.xaml.media',
+            'windows.ui.xaml.shapes', 'windows.ui.xaml.documents',
+            'windows.ui.xaml.markup', 'windows.ui.xaml.data',
+            'windows.ui.xaml.input', 'windows.ui.xaml.navigation',
+            'onnxruntime', 'onnx', 'tensorflow', 'pytorch', 'torch',
+            'opencv', 'cv2', 'numpy', 'scipy', 'pandas',
+            'sklearn', 'scikit', 'matplotlib', 'seaborn',
+            'webview2', 'loguploader', 'cef', 'libcef', 'chrome_elf'
+        )
         system_process_patterns = @(
             'system', 'idle', 'registry', 'smss', 'csrss', 'wininit', 'winlogon',
             'services', 'lsass', 'fontdrvhost', 'svchost', 'dllhost', 'wmiprvse',
@@ -293,7 +347,6 @@ $config = $DefaultConfig
 if (Test-Path $ConfigPath) {
     try {
         $userConfig = Get-Content $ConfigPath -Raw | ConvertFrom-Json -ErrorAction Stop
-        
         foreach ($section in $userConfig.PSObject.Properties) {
             if ($config.$($section.Name)) {
                 foreach ($prop in $section.Value.PSObject.Properties) {
@@ -303,7 +356,7 @@ if (Test-Path $ConfigPath) {
         }
         Write-Host "✅ Конфигурация загружена: $ConfigPath" -ForegroundColor Green
     } catch {
-        Write-Host "⚠️ Ошибка загрузки конфигурации, используются значения по умолчанию" -ForegroundColor Yellow
+        Write-Host "⚠️ Ошибка загрузки конфигурации" -ForegroundColor Yellow
     }
 } else {
     try {
@@ -330,438 +383,173 @@ $script:LogFile = $config.logging.log_file
 if (Test-Path $config.virustotal.cache_file) {
     try {
         $script:VirusTotalCache = Get-Content $config.virustotal.cache_file -Raw | ConvertFrom-Json -ErrorAction Stop
-        Write-Host "📦 Кэш VirusTotal загружен: $($script:VirusTotalCache.Count) записей" -ForegroundColor Gray
     } catch {
         $script:VirusTotalCache = @{}
     }
 }
 
 function Write-Log {
-    param(
-        [string]$Message,
-        [ValidateSet('DEBUG', 'INFO', 'WARNING', 'ERROR')]
-        [string]$Level = 'INFO'
-    )
-    
+    param([string]$Message, [string]$Level = 'INFO')
     if (-not $config.logging.enabled) { return }
-    
-    $levels = @{
-        'DEBUG' = 0
-        'INFO' = 1
-        'WARNING' = 2
-        'ERROR' = 3
-    }
-    
-    $configLevel = switch ($config.logging.log_level) {
-        'DEBUG' { 0 }
-        'INFO' { 1 }
-        'WARNING' { 2 }
-        'ERROR' { 3 }
-        default { 1 }
-    }
-    
-    if ($levels[$Level] -lt $configLevel) { return }
-    
-    switch ($Level) {
-        'ERROR' { if (-not $config.logging.log_errors) { return } }
-        'WARNING' { if (-not $config.logging.log_warnings) { return } }
-        'INFO' { if (-not $config.logging.log_info) { return } }
-        'DEBUG' { if (-not $config.logging.log_debug) { return } }
-    }
-    
     $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
     $logMessage = "[$timestamp] [$Level] $Message"
-    
-    switch ($Level) {
-        'DEBUG' { Write-Host $logMessage -ForegroundColor Gray }
-        'INFO' { Write-Host $logMessage -ForegroundColor White }
-        'WARNING' { Write-Host $logMessage -ForegroundColor Yellow }
-        'ERROR' { Write-Host $logMessage -ForegroundColor Red }
-    }
-    
-    try {
-        Add-Content -Path $script:LogFile -Value $logMessage -Encoding UTF8
-    } catch {
-    }
+    try { Add-Content -Path $script:LogFile -Value $logMessage -Encoding UTF8 } catch {}
 }
 
 function Test-Signature {
     param([string]$FilePath)
-    
     try {
         if (-not (Test-Path $FilePath)) { return $false }
         $signature = Get-AuthenticodeSignature -FilePath $FilePath -ErrorAction SilentlyContinue
-        if ($signature) {
-            return $signature.Status -eq 'Valid'
-        }
+        if ($signature) { return $signature.Status -eq 'Valid' }
         return $false
-    } catch {
-        Write-Log "Ошибка проверки подписи: $FilePath - $($_.Exception.Message)" -Level 'ERROR'
-        return $false
-    }
+    } catch { return $false }
 }
 
 function Get-FileHashSHA256 {
     param([string]$FilePath)
-    
     try {
         if (-not (Test-Path $FilePath)) { return $null }
         $hash = Get-FileHash -Path $FilePath -Algorithm SHA256 -ErrorAction SilentlyContinue
-        if ($hash) {
-            return $hash.Hash
-        }
+        if ($hash) { return $hash.Hash }
         return $null
-    } catch {
-        Write-Log "Ошибка получения хеша: $FilePath - $($_.Exception.Message)" -Level 'ERROR'
-        return $null
-    }
+    } catch { return $null }
 }
 
 function Test-JarContent {
     param([string]$FilePath)
-    
     try {
         if (-not (Test-Path $FilePath)) { return @() }
         if ([System.IO.Path]::GetExtension($FilePath).ToLower() -ne '.jar') { return @() }
-        
         $foundCheats = @()
         $zip = [System.IO.Compression.ZipFile]::OpenRead($FilePath)
-        
         try {
             foreach ($entry in $zip.Entries) {
                 $entryName = $entry.FullName.ToLower()
-                
                 $detection = Get-RiskLevel -InputString $entryName -FilePath $entryName
-                if ($detection.Risk -ne 'Unknown') {
-                    $foundCheats += $detection.Reason
-                }
-                
-                if ($entry.Name -like '*.class' -or $entry.Name -like '*.java' -or 
-                    $entry.Name -like '*.txt' -or $entry.Name -like '*.json' -or 
-                    $entry.Name -like '*.cfg' -or $entry.Name -like '*.xml' -or
-                    $entry.Name -like '*.properties' -or $entry.Name -like '*.yml') {
+                if ($detection.Risk -ne 'Unknown') { $foundCheats += $detection.Reason }
+                if ($entry.Name -like '*.class' -or $entry.Name -like '*.java' -or $entry.Name -like '*.txt' -or $entry.Name -like '*.json' -or $entry.Name -like '*.cfg' -or $entry.Name -like '*.xml' -or $entry.Name -like '*.properties' -or $entry.Name -like '*.yml') {
                     try {
                         $stream = $entry.Open()
                         $reader = New-Object System.IO.StreamReader($stream)
-                        $content = $reader.ReadToEnd()
-                        $reader.Close()
-                        $stream.Close()
-                        
-                        $lowerContent = $content.ToLower()
-                        
+                        $content = $reader.ReadToEnd().ToLower()
+                        $reader.Close(); $stream.Close()
                         foreach ($cheatName in $config.detection.cheat_code_patterns.Keys) {
                             $patterns = $config.detection.cheat_code_patterns[$cheatName]
                             $matchCount = 0
-                            
-                            foreach ($pattern in $patterns) {
-                                if ($lowerContent -match [regex]::Escape($pattern.ToLower())) {
-                                    $matchCount++
-                                }
-                            }
-                            
-                            if ($matchCount -ge 2) {
-                                $foundCheats += "Совпадение с читом '$cheatName' ($matchCount паттернов)"
-                            }
+                            foreach ($pattern in $patterns) { if ($content -match [regex]::Escape($pattern.ToLower())) { $matchCount++ } }
+                            if ($matchCount -ge 2) { $foundCheats += "Совпадение с читом '$cheatName'" }
                         }
-                        
-                        $suspiciousCount = 0
-                        foreach ($pattern in $config.detection.jar_suspicious_patterns) {
-                            if ($lowerContent -match [regex]::Escape($pattern)) {
-                                $suspiciousCount++
-                            }
-                        }
-                        
-                        if ($suspiciousCount -ge 15) {
-                            $foundCheats += "Подозрительный код ($suspiciousCount паттернов)"
-                        }
-                    } catch {
-                        Write-Log "Ошибка чтения JAR entry: $($entry.FullName)" -Level 'DEBUG'
-                    }
+                    } catch {}
                 }
             }
-        } finally {
-            $zip.Dispose()
-        }
-        
+        } finally { $zip.Dispose() }
         return $foundCheats | Select-Object -Unique
-    } catch {
-        Write-Log "Ошибка анализа JAR: $FilePath - $($_.Exception.Message)" -Level 'ERROR'
-        return @()
-    }
+    } catch { return @() }
 }
 
 function Check-VirusTotal {
     param([string]$FilePath)
-    
     try {
         if ($SkipVirusTotal) { return $null }
         if (-not (Test-Path $FilePath)) { return $null }
-        if (-not $config.virustotal.check_files) { return $null }
-        
         $hash = Get-FileHashSHA256 -FilePath $FilePath
         if (-not $hash) { return $null }
-        
         if ($script:VirusTotalCache.ContainsKey($hash)) {
             $cached = $script:VirusTotalCache[$hash]
-            $lastChecked = [DateTime]$cached.last_checked
-            $hoursSinceCheck = ((Get-Date) - $lastChecked).TotalHours
-            
+            $hoursSinceCheck = ((Get-Date) - [DateTime]$cached.last_checked).TotalHours
             if ($hoursSinceCheck -lt $config.virustotal.cache_hours) {
-                Write-Log "Кэш VirusTotal: $hash (проверено $hoursSinceCheck ч. назад)" -Level 'DEBUG'
-                return [PSCustomObject]@{
-                    Malicious = $cached.malicious
-                    Suspicious = $cached.suspicious
-                    Undetected = $cached.undetected
-                    Harmless = $cached.harmless
-                    Total = $cached.malicious + $cached.suspicious + $cached.undetected + $cached.harmless
-                }
+                return [PSCustomObject]@{ Malicious = $cached.malicious; Suspicious = $cached.suspicious; Undetected = $cached.undetected; Harmless = $cached.harmless; Total = $cached.malicious + $cached.suspicious + $cached.undetected + $cached.harmless }
             }
         }
-        
         $apiKey = $config.virustotal.api_key
-        if ([string]::IsNullOrWhiteSpace($apiKey)) {
-            $apiKey = $env:VIRUSTOTAL_API_KEY
-        }
-        
+        if ([string]::IsNullOrWhiteSpace($apiKey)) { $apiKey = $env:VIRUSTOTAL_API_KEY }
         if ([string]::IsNullOrWhiteSpace($apiKey)) { return $null }
-        
-        $timeSinceLastRequest = ((Get-Date) - $script:VirusTotalLastRequestTime).TotalSeconds
-        if ($script:VirusTotalRequests -ge $config.virustotal.max_requests_per_minute) {
-            $waitTime = 60 - $timeSinceLastRequest
-            if ($waitTime -gt 0) {
-                Write-Log "Ожидание лимита VirusTotal: $waitTime сек" -Level 'INFO'
-                Start-Sleep -Seconds $waitTime
-                $script:VirusTotalRequests = 0
-                $script:VirusTotalLastRequestTime = Get-Date
-            }
-        }
-        
-        $headers = @{
-            'x-apikey' = $apiKey
-        }
-        
+        $headers = @{ 'x-apikey' = $apiKey }
         $response = Invoke-RestMethod -Uri "https://www.virustotal.com/api/v3/files/$hash" -Headers $headers -Method Get -ErrorAction SilentlyContinue
-        
         $script:VirusTotalRequests++
-        $script:VirusTotalLastRequestTime = Get-Date
-        
         if ($response -and $response.data -and $response.data.attributes) {
             $stats = $response.data.attributes.last_analysis_stats
-            
-            $result = [PSCustomObject]@{
-                Malicious = $stats.malicious
-                Suspicious = $stats.suspicious
-                Undetected = $stats.undetected
-                Harmless = $stats.harmless
-                Total = $stats.malicious + $stats.suspicious + $stats.undetected + $stats.harmless
-            }
-            
-            $script:VirusTotalCache[$hash] = @{
-                hash = $hash
-                malicious = $result.Malicious
-                suspicious = $result.Suspicious
-                undetected = $result.Undetected
-                harmless = $result.Harmless
-                last_checked = (Get-Date).ToString('yyyy-MM-ddTHH:mm:ss')
-            }
-            
-            try {
-                $script:VirusTotalCache | ConvertTo-Json -Depth 10 | Out-File -FilePath $config.virustotal.cache_file -Encoding UTF8
-            } catch {
-                Write-Log "Ошибка сохранения кэша VirusTotal" -Level 'WARNING'
-            }
-            
-            return $result
+            return [PSCustomObject]@{ Malicious = $stats.malicious; Suspicious = $stats.suspicious; Undetected = $stats.undetected; Harmless = $stats.harmless; Total = $stats.malicious + $stats.suspicious + $stats.undetected + $stats.harmless }
         }
-        
         return $null
-    } catch {
-        Write-Log "Ошибка VirusTotal: $($_.Exception.Message)" -Level 'ERROR'
-        return $null
-    }
+    } catch { return $null }
 }
 
 function Is-Whitelisted {
     param([string]$InputString, [string]$FilePath = "")
-    
     if (-not $InputString) { return $false }
-    
     $lowerInput = $InputString.ToLower()
     $lowerPath = $FilePath.ToLower()
-    
-    if ($lowerPath -match '\\\.minecraft\\versions\\.*\\\.fabric\\') {
-        return $true
-    }
-    
-    if ($lowerPath -match '\\\.minecraft\\libraries\\net\\fabricmc\\') {
-        return $true
-    }
-    
-    if ($lowerPath -match '\\\.minecraft\\libraries\\net\\minecraftforge\\') {
-        return $true
-    }
-    
-    if ($lowerPath -match '\\\.minecraft\\libraries\\net\\minecraftforge\\fmlloader\\') {
-        return $true
-    }
-    
-    if ($lowerPath -match '\\\.minecraft\\libraries\\.*\\fabric') {
-        return $true
-    }
-    
-    if ($lowerPath -match '\\\.minecraft\\libraries\\.*\\forge') {
-        return $true
-    }
-    
-    if ($lowerPath -match '\\\.minecraft\\libraries\\.*\\minecraftforge') {
-        return $true
-    }
-    
-    if ($lowerPath -match '\\\.minecraft\\mods\\.*fabric') {
-        return $true
-    }
-    
-    if ($lowerPath -match '\\\.minecraft\\mods\\.*forge') {
-        return $true
-    }
-    
-    if ($lowerInput -match '\.jar$|\.jar\s|\.exe$|\.exe\s|\.dll$|\.dll\s') {
-        return $false
-    }
-    
-    if ($lowerPath -match '\\windows\\|\\system32\\|\\syswow64\\|\\program files\\|\\program files \(x86\)\\|\\programdata\\|\\appdata\\local\\temp\\|\\appdata\\local\\microsoft\\|\\appdata\\roaming\\microsoft\\') {
-        return $true
-    }
-    
-    foreach ($pattern in $config.detection.whitelist_patterns) {
-        if ($lowerInput -match [regex]::Escape($pattern)) {
-            return $true
-        }
-    }
-    
+    if ($lowerPath -match '\\\.minecraft\\versions\\.*\\\.fabric\\') { return $true }
+    if ($lowerPath -match '\\\.minecraft\\libraries\\net\\fabricmc\\') { return $true }
+    if ($lowerPath -match '\\\.minecraft\\libraries\\net\\minecraftforge\\') { return $true }
+    if ($lowerPath -match '\\\.minecraft\\libraries\\.*\\fabric') { return $true }
+    if ($lowerPath -match '\\\.minecraft\\libraries\\.*\\forge') { return $true }
+    if ($lowerPath -match '\\\.minecraft\\libraries\\.*\\minecraftforge') { return $true }
+    if ($lowerInput -match '\.jar$|\.jar\s|\.exe$|\.exe\s|\.dll$|\.dll\s') { return $false }
+    if ($lowerPath -match '\\windows\\|\\system32\\|\\syswow64\\|\\program files\\|\\programdata\\|\\appdata\\local\\temp\\|\\appdata\\local\\microsoft\\|\\appdata\\roaming\\microsoft\\') { return $true }
+    foreach ($pattern in $config.detection.whitelist_patterns) { if ($lowerInput -match [regex]::Escape($pattern)) { return $true } }
+    return $false
+}
+
+function Is-DllWhitelisted {
+    param([string]$DllName)
+    if (-not $DllName) { return $false }
+    $baseName = [System.IO.Path]::GetFileNameWithoutExtension($DllName.ToLower())
+    foreach ($pattern in $config.detection.dll_whitelist_patterns) { if ($baseName -match [regex]::Escape($pattern)) { return $true } }
     return $false
 }
 
 function Is-SystemProcess {
     param([string]$ProcessName)
-    
     if (-not $ProcessName) { return $false }
-    
     $lowerName = $ProcessName.ToLower()
-    
-    foreach ($pattern in $config.detection.system_process_patterns) {
-        if ($lowerName -match [regex]::Escape($pattern)) {
-            return $true
-        }
-    }
-    
+    foreach ($pattern in $config.detection.system_process_patterns) { if ($lowerName -match [regex]::Escape($pattern)) { return $true } }
     return $false
 }
 
 function Get-RiskLevel {
     param([string]$InputString, [string]$FilePath = "")
-    
-    if (-not $InputString) { 
-        return @{ 
-            Risk = 'Unknown'
-            Reason = ''
-            Probability = 0 
-        } 
-    }
-    
+    if (-not $InputString) { return @{ Risk = 'Unknown'; Reason = ''; Probability = 0 } }
     $lowerInput = $InputString.ToLower()
     $lowerPath = $FilePath.ToLower()
     $foundPatterns = @()
     $probability = 0
-    
-    if (Is-Whitelisted -InputString $lowerInput -FilePath $lowerPath) {
-        return @{ 
-            Risk = 'Unknown'
-            Reason = ''
-            Probability = 0 
-        }
-    }
-    
+    if (Is-Whitelisted -InputString $lowerInput -FilePath $lowerPath) { return @{ Risk = 'Unknown'; Reason = ''; Probability = 0 } }
     $isExactMatch = $false
-    
     foreach ($pattern in $config.detection.exact_patterns) {
         if ($lowerInput -match $pattern) {
             $patternName = $pattern.TrimStart('^').TrimEnd('$')
-            if ($patternName -notin $foundPatterns) {
-                $foundPatterns += $patternName
-                $probability += 45
-                $isExactMatch = $true
-            }
+            if ($patternName -notin $foundPatterns) { $foundPatterns += $patternName; $probability += 45; $isExactMatch = $true }
         }
     }
-    
     if (-not $isExactMatch) {
         foreach ($pattern in $config.detection.cheat_patterns) {
             if ($lowerInput -match [regex]::Escape($pattern.ToLower())) {
-                if ($pattern -notin $foundPatterns) {
-                    $foundPatterns += $pattern
-                    $probability += 15
-                }
+                if ($pattern -notin $foundPatterns) { $foundPatterns += $pattern; $probability += 15 }
             }
         }
     }
-    
     $probability = [math]::Min(98, $probability + ($foundPatterns.Count * 7))
-    
-    $hash = 0
-    foreach ($char in $lowerInput.ToCharArray()) {
-        $hash = ($hash * 31 + [int]$char) % 1000
-    }
-    
-    $probability = [math]::Min(98, $probability + ($hash % 20))
-    
     if ($foundPatterns.Count -gt 0) {
         $riskLevel = 'Critical'
         if ($probability -lt 60) { $riskLevel = 'High' }
         if ($probability -lt 40) { $riskLevel = 'Suspicious' }
-        
-        return @{ 
-            Risk = $riskLevel
-            Reason = "Совпадение с $($foundPatterns -join ', ')"
-            Probability = [math]::Max(30, [math]::Min(98, $probability))
-        }
+        return @{ Risk = $riskLevel; Reason = "Совпадение с $($foundPatterns -join ', ')"; Probability = [math]::Max(30, [math]::Min(98, $probability)) }
     }
-    
-    return @{ 
-        Risk = 'Unknown'
-        Reason = ''
-        Probability = 0 
-    }
+    return @{ Risk = 'Unknown'; Reason = ''; Probability = 0 }
 }
 
 function Format-LastWriteTime {
     param($LastWriteTime)
-    
     if ($null -eq $LastWriteTime) { return "Неизвестно" }
-    
     $timeDiff = (Get-Date) - $LastWriteTime
-    
     if ($timeDiff.TotalMinutes -lt 1) { return "только что" }
     elseif ($timeDiff.TotalHours -lt 1) { return "$([math]::Floor($timeDiff.TotalMinutes)) мин. назад" }
-    elseif ($timeDiff.TotalDays -lt 1) { return "$([math]::Floor($timeDiff.TotalHours)) ч. $($timeDiff.Minutes) мин. назад" }
-    elseif ($timeDiff.TotalDays -lt 30) { return "$([math]::Floor($timeDiff.TotalDays)) дн. $([math]::Floor($timeDiff.TotalHours % 24)) ч. назад" }
-    else { return "$([math]::Floor($timeDiff.TotalDays / 30)) мес. $([math]::Floor($timeDiff.TotalDays % 30)) дн. назад" }
-}
-
-function Update-ProgressDisplay {
-    $percent = [math]::Round(($script:CurrentStep / $script:TotalSteps) * 100)
-    
-    $barLength = 40
-    $filled = [math]::Round($percent / 100 * $barLength)
-    $empty = $barLength - $filled
-    $bar = "[" + ("█" * $filled) + ("░" * $empty) + "]"
-    
-    $fileInfo = ""
-    if ($script:CurrentFileBeingScanned) {
-        $fileInfo = " | $($script:CurrentFileBeingScanned)"
-    }
-    
-    Write-Host "`r$bar $percent% $($script:CurrentScanType) [Просканировано: $($script:TotalFilesScanned)]$fileInfo" -NoNewline -ForegroundColor Cyan
+    elseif ($timeDiff.TotalDays -lt 1) { return "$([math]::Floor($timeDiff.TotalHours)) ч. назад" }
+    elseif ($timeDiff.TotalDays -lt 30) { return "$([math]::Floor($timeDiff.TotalDays)) дн. назад" }
+    else { return "$([math]::Floor($timeDiff.TotalDays / 30)) мес. назад" }
 }
 
 function Test-Admin {
@@ -772,129 +560,35 @@ function Test-Admin {
 
 function Get-DaysSinceLastWrite {
     param($LastWriteTime)
-    
     if ($null -eq $LastWriteTime) { return 999 }
-    
-    $timeDiff = (Get-Date) - $LastWriteTime
-    return [math]::Floor($timeDiff.TotalDays)
+    return [math]::Floor(((Get-Date) - $LastWriteTime).TotalDays)
 }
 
 function Get-AllowedExtensions {
-    return @(
-        '.jar', '.exe', '.dll', '.bat', '.cmd', '.ps1', '.vbs', '.msi', 
-        '.zip', '.rar', '.7z', '.json', '.cfg', '.txt', '.log', '.dat', 
-        '.properties', '.yml', '.yaml', '.xml', '.class', '.java', '.py', '.js', '.lua'
-    )
+    return @('.jar', '.exe', '.dll', '.bat', '.cmd', '.ps1', '.vbs', '.msi', '.zip', '.rar', '.7z', '.json', '.cfg', '.txt', '.log', '.dat', '.properties', '.yml', '.yaml', '.xml', '.class', '.java', '.py', '.js', '.lua')
 }
 
-function Scan-FileWithDetails {
-    param(
-        [string]$FilePath,
-        [string]$ScanType
-    )
-    
-    $file = Get-Item -Path $FilePath -ErrorAction SilentlyContinue
-    if (-not $file) { return $null }
-    
-    $script:TotalFilesScanned++
-    $script:CurrentFileBeingScanned = $file.Name
-    
-    Update-ProgressDisplay
-    
-    $detection = Get-RiskLevel -InputString "$($file.Name) $($file.FullName)" -FilePath $file.FullName
-    
-    if ($detection.Risk -ne 'Unknown') {
-        $jarFindings = @()
-        $signatureValid = $null
-        $fileHash = $null
-        $vtResults = $null
-        
-        if ($file.Extension.ToLower() -eq '.jar') {
-            $jarFindings = Test-JarContent -FilePath $file.FullName
-        }
-        
-        if ($file.Extension.ToLower() -in @('.jar', '.exe', '.dll')) {
-            $signatureValid = Test-Signature -FilePath $file.FullName
-            $fileHash = Get-FileHashSHA256 -FilePath $file.FullName
-            $vtResults = Check-VirusTotal -FilePath $file.FullName
-        }
-        
-        $combinedReason = $detection.Reason
-        if ($jarFindings.Count -gt 0) {
-            $uniqueJarFindings = $jarFindings | Select-Object -Unique
-            $shortJarFindings = ($uniqueJarFindings | Select-Object -First 3) -join '; '
-            if ($uniqueJarFindings.Count -gt 3) {
-                $shortJarFindings += " и ещё $($uniqueJarFindings.Count - 3) совпадений"
-            }
-            $combinedReason += " | JAR: $shortJarFindings"
-        }
-        
-        $signatureInfo = if ($null -ne $signatureValid) {
-            if ($signatureValid) { "Подписано" } else { "Не подписано" }
-        } else { "N/A" }
-        
-        $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
-        
-        $vtInfo = if ($vtResults) {
-            "Mal:$($vtResults.Malicious) Susp:$($vtResults.Suspicious) Harm:$($vtResults.Harmless)"
-        } else { "N/A" }
-        
-        return [PSCustomObject]@{
-            'Тип' = $ScanType
-            'Имя' = $file.Name
-            'Путь' = $file.FullName
-            'PID' = 'N/A'
-            'Детали' = $combinedReason
-            'Последнее изменение' = Format-LastWriteTime $file.LastWriteTime
-            'Статус' = 'Найден'
-            'Риск' = $detection.Risk
-            'Вероятность' = $detection.Probability
-            'Дней с изменения' = Get-DaysSinceLastWrite $file.LastWriteTime
-            'Подпись' = $signatureInfo
-            'SHA256' = $hashInfo
-            'VirusTotal' = $vtInfo
-            'Автор' = '976hk'
-        }
+function Update-ProgressDisplay {
+    $percent = [math]::Round(($script:CurrentStep / $script:TotalSteps) * 100)
+    $barLength = 40
+    $filled = [math]::Round($percent / 100 * $barLength)
+    $empty = $barLength - $filled
+    $bar = "[" + ("█" * $filled) + ("░" * $empty) + "]"
+    $fileInfo = ""
+    if ($script:CurrentFileBeingScanned) {
+        $fileInfo = " | $($script:CurrentFileBeingScanned)"
     }
-    
-    return $null
+    Write-Host "`r$bar $percent% $($script:CurrentScanType) [Просканировано: $($script:TotalFilesScanned)]$fileInfo" -NoNewline -ForegroundColor Cyan
 }
 
-function Scan-DirectoryWithProgress {
-    param(
-        [string]$Path,
-        [string]$ScanType,
-        [int]$MaxDepth
-    )
-    
-    if (-not (Test-Path $Path)) { return @() }
-    
-    $items = @()
-    $files = @()
-    $allowedExtensions = Get-AllowedExtensions
-    
-    try {
-        $files = Get-ChildItem -Path $Path -File -Recurse -Depth $MaxDepth -ErrorAction SilentlyContinue | Where-Object {
-            $_.Extension.ToLower() -in $allowedExtensions
-        }
-    } catch {
-        $files = @()
-    }
-    
-    foreach ($file in $files) {
-        $result = Scan-FileWithDetails -FilePath $file.FullName -ScanType $ScanType
-        if ($result) {
-            $items += $result
-        }
-    }
-    
-    return $items
-}
+$results = [System.Collections.ArrayList]::new()
+$processResults = [System.Collections.ArrayList]::new()
+$javaProcessResults = [System.Collections.ArrayList]::new()
+$injectResults = [System.Collections.ArrayList]::new()
+$serviceResults = [System.Collections.ArrayList]::new()
+$otherDllResults = [System.Collections.ArrayList]::new()
+$javaDllResults = [System.Collections.ArrayList]::new()
 
-$results = @()
-$processResults = @()
-$injectResults = @()
-$serviceResults = @()
 $isAdmin = Test-Admin
 
 Write-Host "`n════════════════════════════════════════════" -ForegroundColor DarkGray
@@ -903,397 +597,272 @@ Write-Host "══════════════════════�
 
 if (-not $isAdmin) {
     Write-Host "⚠️  Внимание: Скрипт запущен без прав администратора." -ForegroundColor Yellow
-    Write-Host "   Некоторые проверки (службы, реестр HKLM) могут быть неполными.`n" -ForegroundColor Yellow
+    Write-Host "   Некоторые проверки могут быть неполными.`n" -ForegroundColor Yellow
 }
 
-if ([string]::IsNullOrWhiteSpace($env:VIRUSTOTAL_API_KEY) -and [string]::IsNullOrWhiteSpace($config.virustotal.api_key)) {
-    Write-Host "ℹ️  Для проверки VirusTotal установите API ключ:" -ForegroundColor Gray
-    Write-Host "   `$env:VIRUSTOTAL_API_KEY = 'ваш_ключ'`n" -ForegroundColor Gray
-}
+$allowedExtensions = Get-AllowedExtensions
 
 $script:CurrentStep = 1
 $script:CurrentScanType = "Сканирование процессов"
 Update-ProgressDisplay
 
 $allProcesses = Get-Process -ErrorAction SilentlyContinue
-$processCount = $allProcesses.Count
-$useWhitelistForProcesses = $processCount -gt 50
+$useWhitelistForProcesses = $allProcesses.Count -gt 50
 
 foreach ($proc in $allProcesses) {
     $procName = $proc.Name
     $procPath = $null
+    try { $procPath = $proc.Path } catch { $procPath = $null }
     
-    try {
-        $procPath = $proc.Path
-    } catch {
-        $procPath = $null
-    }
+    $isSystemProc = Is-SystemProcess -ProcessName $procName
+    $isJavaProc = $procName -match '^(java|javaw|javaws|jp2launcher|javac|jconsole|jvisualvm|jmc|openjdk|javald)$'
     
+    if ($useWhitelistForProcesses -and $isSystemProc -and -not $isJavaProc) { continue }
+    
+    $script:TotalFilesScanned++
     $script:CurrentFileBeingScanned = $procName
     Update-ProgressDisplay
     
-    $isSystemProc = Is-SystemProcess -ProcessName $procName
-    
-    if ($useWhitelistForProcesses -and $isSystemProc) {
-        continue
-    }
-    
-    $signatureValid = $null
-    $fileHash = $null
-    $vtResults = $null
-    
+    $signatureValid = $null; $fileHash = $null
     if ($procPath -and (Test-Path $procPath)) {
         $signatureValid = Test-Signature -FilePath $procPath
         $fileHash = Get-FileHashSHA256 -FilePath $procPath
-        if ($config.virustotal.check_processes) {
-            $vtResults = Check-VirusTotal -FilePath $procPath
-        }
     }
     
-    $signatureInfo = if ($null -ne $signatureValid) {
-        if ($signatureValid) { "Подписано" } else { "Не подписано" }
-    } else { "N/A" }
-    
+    $signatureInfo = if ($null -ne $signatureValid) { if ($signatureValid) { "Подписано" } else { "Не подписано" } } else { "N/A" }
     $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
-    
-    $vtInfo = if ($vtResults) {
-        "Mal:$($vtResults.Malicious) Susp:$($vtResults.Suspicious) Harm:$($vtResults.Harmless)"
-    } else { "N/A" }
+    $processType = if ($isJavaProc) { 'Java процесс' } elseif ($isSystemProc) { 'Системный процесс' } else { 'Процесс' }
     
     $result = [PSCustomObject]@{
-        'Тип' = 'Процесс'
-        'Имя' = $procName
-        'Путь' = if ($procPath) { $procPath } else { 'N/A' }
-        'PID' = $proc.Id
-        'Детали' = if ($isSystemProc) { "Системный процесс" } else { "Запущенный процесс" }
-        'Последнее изменение' = 'N/A'
-        'Статус' = 'Работает'
-        'Риск' = 'Info'
-        'Вероятность' = 0
-        'Дней с изменения' = 999
-        'Подпись' = $signatureInfo
-        'SHA256' = $hashInfo
-        'VirusTotal' = $vtInfo
-        'Автор' = '976hk'
+        'Тип' = $processType; 'Имя' = $procName; 'Путь' = if ($procPath) { $procPath } else { 'N/A' }
+        'PID' = $proc.Id; 'Детали' = ''; 'Последнее изменение' = 'N/A'; 'Статус' = 'Работает'
+        'Риск' = 'Info'; 'Вероятность' = 0; 'Дней с изменения' = 999
+        'Подпись' = $signatureInfo; 'SHA256' = $hashInfo; 'VirusTotal' = 'N/A'; 'Автор' = '976hk'
     }
     
-    $results += $result
-    $processResults += $result
+    [void]$results.Add($result)
+    if ($isJavaProc) { [void]$javaProcessResults.Add($result) } else { [void]$processResults.Add($result) }
 }
+
+Write-Host ""
 
 $script:CurrentStep = 2
 $script:CurrentScanType = "Сканирование файлов"
 Update-ProgressDisplay
 
-$scanPaths = $config.scan.paths | ForEach-Object {
-    [Environment]::ExpandEnvironmentVariables($_)
-}
-
-foreach ($path in $scanPaths) {
-    $scannedItems = Scan-DirectoryWithProgress -Path $path -ScanType "файлов" -MaxDepth $config.scan.max_depth_files
-    
-    foreach ($item in $scannedItems) {
-        $results += $item
+foreach ($path in ($config.scan.paths | ForEach-Object { [Environment]::ExpandEnvironmentVariables($_) })) {
+    if (-not (Test-Path $path)) { continue }
+    $files = Get-ChildItem -Path $path -File -Recurse -Depth $config.scan.max_depth_files -ErrorAction SilentlyContinue | Where-Object { $_.Extension.ToLower() -in $allowedExtensions }
+    foreach ($file in $files) {
+        $script:TotalFilesScanned++
+        $script:CurrentFileBeingScanned = $file.Name
+        Update-ProgressDisplay
+        $detection = Get-RiskLevel -InputString "$($file.Name) $($file.FullName)" -FilePath $file.FullName
+        if ($detection.Risk -ne 'Unknown') {
+            $signatureValid = $null; $fileHash = $null
+            if ($file.Extension.ToLower() -in @('.jar', '.exe', '.dll')) {
+                $signatureValid = Test-Signature -FilePath $file.FullName
+                $fileHash = Get-FileHashSHA256 -FilePath $file.FullName
+            }
+            $signatureInfo = if ($null -ne $signatureValid) { if ($signatureValid) { "Подписано" } else { "Не подписано" } } else { "N/A" }
+            $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
+            $result = [PSCustomObject]@{
+                'Тип' = 'файлов'; 'Имя' = $file.Name; 'Путь' = $file.FullName; 'PID' = 'N/A'
+                'Детали' = $detection.Reason; 'Последнее изменение' = Format-LastWriteTime $file.LastWriteTime
+                'Статус' = 'Найден'; 'Риск' = $detection.Risk; 'Вероятность' = $detection.Probability
+                'Дней с изменения' = Get-DaysSinceLastWrite $file.LastWriteTime
+                'Подпись' = $signatureInfo; 'SHA256' = $hashInfo; 'VirusTotal' = 'N/A'; 'Автор' = '976hk'
+            }
+            [void]$results.Add($result)
+        }
     }
 }
+
+Write-Host ""
 
 $script:CurrentStep = 3
 $script:CurrentScanType = "Сканирование Minecraft"
 Update-ProgressDisplay
 
-$minecraftPaths = $config.scan.minecraft_paths | ForEach-Object {
-    [Environment]::ExpandEnvironmentVariables($_)
-}
-
-foreach ($mcPath in $minecraftPaths) {
-    $scannedItems = Scan-DirectoryWithProgress -Path $mcPath -ScanType "Minecraft" -MaxDepth $config.scan.max_depth_minecraft
-    
-    foreach ($item in $scannedItems) {
-        $results += $item
+foreach ($mcPath in ($config.scan.minecraft_paths | ForEach-Object { [Environment]::ExpandEnvironmentVariables($_) })) {
+    if (-not (Test-Path $mcPath)) { continue }
+    $files = Get-ChildItem -Path $mcPath -File -Recurse -Depth $config.scan.max_depth_minecraft -ErrorAction SilentlyContinue | Where-Object { $_.Extension.ToLower() -in $allowedExtensions }
+    foreach ($file in $files) {
+        $script:TotalFilesScanned++
+        $script:CurrentFileBeingScanned = $file.Name
+        Update-ProgressDisplay
+        $detection = Get-RiskLevel -InputString "$($file.Name) $($file.FullName)" -FilePath $file.FullName
+        if ($detection.Risk -ne 'Unknown') {
+            $jarFindings = @()
+            if ($file.Extension.ToLower() -eq '.jar') { $jarFindings = Test-JarContent -FilePath $file.FullName }
+            $combinedReason = $detection.Reason
+            if ($jarFindings.Count -gt 0) {
+                $uniqueJarFindings = $jarFindings | Select-Object -Unique
+                $shortJarFindings = ($uniqueJarFindings | Select-Object -First 3) -join '; '
+                if ($uniqueJarFindings.Count -gt 3) { $shortJarFindings += " и ещё $($uniqueJarFindings.Count - 3)" }
+                $combinedReason += " | JAR: $shortJarFindings"
+            }
+            $signatureValid = $null; $fileHash = $null
+            if ($file.Extension.ToLower() -in @('.jar', '.exe', '.dll')) {
+                $signatureValid = Test-Signature -FilePath $file.FullName
+                $fileHash = Get-FileHashSHA256 -FilePath $file.FullName
+            }
+            $signatureInfo = if ($null -ne $signatureValid) { if ($signatureValid) { "Подписано" } else { "Не подписано" } } else { "N/A" }
+            $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
+            $result = [PSCustomObject]@{
+                'Тип' = 'Minecraft'; 'Имя' = $file.Name; 'Путь' = $file.FullName; 'PID' = 'N/A'
+                'Детали' = $combinedReason; 'Последнее изменение' = Format-LastWriteTime $file.LastWriteTime
+                'Статус' = 'Найден'; 'Риск' = $detection.Risk; 'Вероятность' = $detection.Probability
+                'Дней с изменения' = Get-DaysSinceLastWrite $file.LastWriteTime
+                'Подпись' = $signatureInfo; 'SHA256' = $hashInfo; 'VirusTotal' = 'N/A'; 'Автор' = '976hk'
+            }
+            [void]$results.Add($result)
+        }
     }
 }
+
+Write-Host ""
 
 $script:CurrentStep = 4
 $script:CurrentScanType = "Сканирование DLL"
 Update-ProgressDisplay
 
-if ($config.scan.check_dll) {
-    $dllPaths = @("$env:Temp", "$env:AppData\Local\Temp")
-    
-    foreach ($dllPath in $dllPaths) {
-        if (Test-Path $dllPath) {
-            $dllFiles = Get-ChildItem -Path $dllPath -File -Filter "*.dll" -Recurse -Depth 3 -ErrorAction SilentlyContinue
-            
-            foreach ($dllFile in $dllFiles) {
-                $script:TotalFilesScanned++
-                $script:CurrentFileBeingScanned = $dllFile.Name
-                
-                Update-ProgressDisplay
-                
-                $signatureValid = Test-Signature -FilePath $dllFile.FullName
-                $fileHash = Get-FileHashSHA256 -FilePath $dllFile.FullName
-                $vtResults = Check-VirusTotal -FilePath $dllFile.FullName
-                
-                $signatureInfo = if ($null -ne $signatureValid) {
-                    if ($signatureValid) { "Подписано" } else { "Не подписано" }
-                } else { "N/A" }
-                
-                $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
-                
-                $vtInfo = if ($vtResults) {
-                    "Mal:$($vtResults.Malicious) Susp:$($vtResults.Suspicious) Harm:$($vtResults.Harmless)"
-                } else { "N/A" }
-                
-                $result = [PSCustomObject]@{
-                    'Тип' = 'DLL Инжект'
-                    'Имя' = $dllFile.Name
-                    'Путь' = $dllFile.FullName
-                    'PID' = 'N/A'
-                    'Детали' = "DLL файл в Temp"
-                    'Последнее изменение' = Format-LastWriteTime $dllFile.LastWriteTime
-                    'Статус' = 'Найден'
-                    'Риск' = 'Info'
-                    'Вероятность' = 0
-                    'Дней с изменения' = Get-DaysSinceLastWrite $dllFile.LastWriteTime
-                    'Подпись' = $signatureInfo
-                    'SHA256' = $hashInfo
-                    'VirusTotal' = $vtInfo
-                    'Автор' = '976hk'
-                }
-                
-                $results += $result
-                $injectResults += $result
+foreach ($dllPath in @("$env:Temp", "$env:AppData\Local\Temp")) {
+    if (-not (Test-Path $dllPath)) { continue }
+    $dllFiles = Get-ChildItem -Path $dllPath -File -Filter "*.dll" -Recurse -Depth 3 -ErrorAction SilentlyContinue
+    foreach ($dllFile in $dllFiles) {
+        $script:TotalFilesScanned++
+        $script:CurrentFileBeingScanned = $dllFile.Name
+        Update-ProgressDisplay
+        $signatureValid = Test-Signature -FilePath $dllFile.FullName
+        $fileHash = Get-FileHashSHA256 -FilePath $dllFile.FullName
+        $signatureInfo = if ($null -ne $signatureValid) { if ($signatureValid) { "Подписано" } else { "Не подписано" } } else { "N/A" }
+        $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
+        $result = [PSCustomObject]@{
+            'Тип' = 'DLL Инжект'; 'Имя' = $dllFile.Name; 'Путь' = $dllFile.FullName; 'PID' = 'N/A'
+            'Детали' = "DLL файл в Temp"; 'Последнее изменение' = Format-LastWriteTime $dllFile.LastWriteTime
+            'Статус' = 'Найден'; 'Риск' = 'Info'; 'Вероятность' = 0
+            'Дней с изменения' = Get-DaysSinceLastWrite $dllFile.LastWriteTime
+            'Подпись' = $signatureInfo; 'SHA256' = $hashInfo; 'VirusTotal' = 'N/A'; 'Автор' = '976hk'
+        }
+        [void]$results.Add($result)
+        [void]$injectResults.Add($result)
+    }
+}
+
+$cheatDllPaths = @(
+    "$env:AppData\.minecraft\bin", "$env:AppData\.minecraft\versions", "$env:AppData\.minecraft\libraries",
+    "$env:AppData\.minecraft\mods", "$env:AppData\.minecraft\config",
+    "C:\Program Files\Java", "C:\Program Files (x86)\Java", "$env:ProgramFiles\Java", "$env:ProgramFiles(x86)\Java",
+    "$env:LOCALAPPDATA\Programs\Java", "$env:LOCALAPPDATA\Programs\Eclipse Adoptium", "$env:LOCALAPPDATA\Programs\Microsoft",
+    "$env:UserProfile\Downloads", "$env:UserProfile\Desktop", "$env:APPDATA", "$env:LOCALAPPDATA"
+)
+
+$suspiciousDllPatterns = @("*inject*", "*hook*", "*hack*", "*cheat*", "*loader*", "*bypass*", "*stealth*", "*overlay*", "*esp*", "*aimbot*", "*xray*", "*wallhack*", "*vape*", "*liquidbounce*", "*wurst*", "*meteor*", "*sigma*", "*phobos*", "*impact*", "*kami*", "*future*", "*pyro*", "*konas*", "*rusherhack*", "*bleachhack*", "*baritone*", "*tenacity*", "*rise*")
+
+foreach ($dllPath in $cheatDllPaths) {
+    if (-not (Test-Path $dllPath)) { continue }
+    foreach ($pattern in $suspiciousDllPatterns) {
+        $foundDlls = Get-ChildItem -Path $dllPath -File -Filter "$pattern.dll" -Recurse -Depth 4 -ErrorAction SilentlyContinue
+        foreach ($dllFile in $foundDlls) {
+            if (Is-DllWhitelisted -DllName $dllFile.Name) { continue }
+            $script:TotalFilesScanned++
+            $script:CurrentFileBeingScanned = $dllFile.Name
+            Update-ProgressDisplay
+            $signatureValid = Test-Signature -FilePath $dllFile.FullName
+            $fileHash = Get-FileHashSHA256 -FilePath $dllFile.FullName
+            $signatureInfo = if ($null -ne $signatureValid) { if ($signatureValid) { "Подписано" } else { "Не подписано" } } else { "N/A" }
+            $hashInfo = if ($fileHash) { $fileHash.Substring(0, 16) + "..." } else { "N/A" }
+            $result = [PSCustomObject]@{
+                'Тип' = 'Прочая DLL'; 'Имя' = $dllFile.Name; 'Путь' = $dllFile.FullName; 'PID' = 'N/A'
+                'Детали' = "Подозрительное имя DLL"; 'Последнее изменение' = Format-LastWriteTime $dllFile.LastWriteTime
+                'Статус' = 'Найден'; 'Риск' = 'High'; 'Вероятность' = 70
+                'Дней с изменения' = Get-DaysSinceLastWrite $dllFile.LastWriteTime
+                'Подпись' = $signatureInfo; 'SHA256' = $hashInfo; 'VirusTotal' = 'N/A'; 'Автор' = '976hk'
             }
+            [void]$results.Add($result)
+            [void]$otherDllResults.Add($result)
         }
     }
 }
+
+Write-Host ""
 
 $script:CurrentStep = 5
 $script:CurrentScanType = "Сканирование реестра"
 Update-ProgressDisplay
 
-if ($config.scan.check_registry) {
-    $registryPaths = @(
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run",
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
-        "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
-        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run",
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders",
-        "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders",
-        "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
-    )
-    
-    foreach ($regPath in $registryPaths) {
-        if (Test-Path $regPath) {
-            $regItems = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
-            
-            if ($regItems) {
-                $regItems.PSObject.Properties | Where-Object {
-                    $_.Name -notmatch '^PS' -and $_.Value
-                } | ForEach-Object {
-                    $detection = Get-RiskLevel -InputString "$($_.Name) $($_.Value)" -FilePath $_.Value
-                    
-                    if ($detection.Risk -ne 'Unknown') {
-                        $result = [PSCustomObject]@{
-                            'Тип' = 'Реестр'
-                            'Имя' = $_.Name
-                            'Путь' = $_.Value
-                            'PID' = 'N/A'
-                            'Детали' = $detection.Reason
-                            'Последнее изменение' = 'N/A'
-                            'Статус' = 'В автозагрузке'
-                            'Риск' = $detection.Risk
-                            'Вероятность' = $detection.Probability
-                            'Дней с изменения' = 999
-                            'Подпись' = 'N/A'
-                            'SHA256' = 'N/A'
-                            'VirusTotal' = 'N/A'
-                            'Автор' = '976hk'
-                        }
-                        
-                        $results += $result
+$registryPaths = @(
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run",
+    "HKCU:\Software\Microsoft\Windows\CurrentVersion\RunOnce",
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run",
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"
+)
+
+foreach ($regPath in $registryPaths) {
+    if (Test-Path $regPath) {
+        $regItems = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
+        if ($regItems) {
+            $regItems.PSObject.Properties | Where-Object { $_.Name -notmatch '^PS' -and $_.Value } | ForEach-Object {
+                $detection = Get-RiskLevel -InputString "$($_.Name) $($_.Value)" -FilePath $_.Value
+                if ($detection.Risk -ne 'Unknown') {
+                    $result = [PSCustomObject]@{
+                        'Тип' = 'Реестр'; 'Имя' = $_.Name; 'Путь' = $_.Value; 'PID' = 'N/A'
+                        'Детали' = $detection.Reason; 'Последнее изменение' = 'N/A'; 'Статус' = 'В автозагрузке'
+                        'Риск' = $detection.Risk; 'Вероятность' = $detection.Probability; 'Дней с изменения' = 999
+                        'Подпись' = 'N/A'; 'SHA256' = 'N/A'; 'VirusTotal' = 'N/A'; 'Автор' = '976hk'
                     }
+                    [void]$results.Add($result)
                 }
             }
         }
     }
 }
+
+Write-Host ""
 
 $script:CurrentStep = 6
 $script:CurrentScanType = "Сканирование служб"
 Update-ProgressDisplay
 
-if ($config.scan.check_services) {
-    Get-Service -ErrorAction SilentlyContinue | Where-Object {
-        $_.Name -ne 'RpcLocator'
-    } | ForEach-Object {
-        $serviceName = $_.Name
-        $displayName = $_.DisplayName
-        
-        $detection = Get-RiskLevel -InputString "$displayName $serviceName"
-        
-        if ($serviceName -in @('Appinfo','Sysmain','Pcasvc','DPS')) {
-            $detection = @{ 
-                Risk = 'System'
-                Reason = "Системная служба Windows: $serviceName"
-                Probability = 0 
-            }
+Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'RpcLocator' } | ForEach-Object {
+    $detection = Get-RiskLevel -InputString "$($_.DisplayName) $($_.Name)"
+    if ($_.Name -in @('Appinfo','Sysmain','Pcasvc','DPS')) { $detection = @{ Risk = 'System'; Reason = "Системная служба"; Probability = 0 } }
+    if ($detection.Risk -ne 'Unknown') {
+        $result = [PSCustomObject]@{
+            'Тип' = 'Служба'; 'Имя' = $_.Name; 'Путь' = $_.DisplayName; 'PID' = 'N/A'
+            'Детали' = $detection.Reason; 'Последнее изменение' = 'N/A'; 'Статус' = $_.Status
+            'Риск' = $detection.Risk; 'Вероятность' = $detection.Probability; 'Дней с изменения' = 999
+            'Подпись' = 'N/A'; 'SHA256' = 'N/A'; 'VirusTotal' = 'N/A'; 'Автор' = '976hk'
         }
-        
-        if ($detection.Risk -ne 'Unknown') {
-            $servicePath = $null
-            
-            try {
-                $serviceInfo = Get-CimInstance Win32_Service -Filter "Name='$serviceName'" -ErrorAction SilentlyContinue
-                if ($serviceInfo) {
-                    $servicePath = $serviceInfo.PathName
-                }
-            } catch {
-                $servicePath = $null
-            }
-            
-            $result = [PSCustomObject]@{
-                'Тип' = 'Служба'
-                'Имя' = $serviceName
-                'Путь' = $displayName
-                'PID' = 'N/A'
-                'Детали' = $detection.Reason
-                'Последнее изменение' = 'N/A'
-                'Статус' = $_.Status
-                'Риск' = $detection.Risk
-                'Вероятность' = $detection.Probability
-                'Дней с изменения' = 999
-                'Подпись' = 'N/A'
-                'SHA256' = 'N/A'
-                'VirusTotal' = 'N/A'
-                'Автор' = '976hk'
-            }
-            
-            $results += $result
-            $serviceResults += $result
-        }
+        [void]$results.Add($result)
+        [void]$serviceResults.Add($result)
     }
 }
+
+Write-Host ""
 
 $script:CurrentStep = 7
 $script:CurrentScanType = "Сканирование сети"
 Update-ProgressDisplay
 
-if ($config.scan.check_network) {
-    Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object {
-        $_.State -eq "Established" -and $_.OwningProcess -ne 0
-    } | ForEach-Object {
-        $procName = $null
-        $procPath = $null
-        
-        try {
-            $proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
-            if ($proc) {
-                $procName = $proc.Name
-                try {
-                    $procPath = $proc.Path
-                } catch {
-                    $procPath = $null
-                }
-            }
-        } catch {
-            $procName = $null
-        }
-        
-        if ($procName) {
-            $detection = Get-RiskLevel -InputString "$procName $procPath" -FilePath $procPath
-            
-            if ($detection.Risk -ne 'Unknown') {
-                $result = [PSCustomObject]@{
-                    'Тип' = 'Сеть'
-                    'Имя' = $procName
-                    'Путь' = "$($_.LocalAddress):$($_.LocalPort) -> $($_.RemoteAddress):$($_.RemotePort)"
-                    'PID' = $_.OwningProcess
-                    'Детали' = $detection.Reason
-                    'Последнее изменение' = 'N/A'
-                    'Статус' = 'Установлено'
-                    'Риск' = $detection.Risk
-                    'Вероятность' = $detection.Probability
-                    'Дней с изменения' = 999
-                    'Подпись' = 'N/A'
-                    'SHA256' = 'N/A'
-                    'VirusTotal' = 'N/A'
-                    'Автор' = '976hk'
-                }
-                
-                $results += $result
-            }
-        }
-    }
-}
-
-$script:CurrentStep = 8
-$script:CurrentScanType = "Сканирование задач"
-Update-ProgressDisplay
-
-if ($config.scan.check_scheduled_tasks) {
-    Get-ScheduledTask -ErrorAction SilentlyContinue | ForEach-Object {
-        $detection = Get-RiskLevel -InputString "$($_.TaskName) $($_.TaskPath)"
-        
+Get-NetTCPConnection -ErrorAction SilentlyContinue | Where-Object { $_.State -eq "Established" -and $_.OwningProcess -ne 0 } | ForEach-Object {
+    $procName = $null; $procPath = $null
+    try {
+        $proc = Get-Process -Id $_.OwningProcess -ErrorAction SilentlyContinue
+        if ($proc) { $procName = $proc.Name; try { $procPath = $proc.Path } catch {} }
+    } catch {}
+    if ($procName) {
+        $detection = Get-RiskLevel -InputString "$procName $procPath" -FilePath $procPath
         if ($detection.Risk -ne 'Unknown') {
             $result = [PSCustomObject]@{
-                'Тип' = 'Задача'
-                'Имя' = $_.TaskName
-                'Путь' = $_.TaskPath
-                'PID' = 'N/A'
-                'Детали' = $detection.Reason
-                'Последнее изменение' = 'N/A'
-                'Статус' = $_.State
-                'Риск' = $detection.Risk
-                'Вероятность' = $detection.Probability
-                'Дней с изменения' = 999
-                'Подпись' = 'N/A'
-                'SHA256' = 'N/A'
-                'VirusTotal' = 'N/A'
-                'Автор' = '976hk'
+                'Тип' = 'Сеть'; 'Имя' = $procName; 'Путь' = "$($_.RemoteAddress):$($_.RemotePort)"; 'PID' = $_.OwningProcess
+                'Детали' = $detection.Reason; 'Последнее изменение' = 'N/A'; 'Статус' = 'Установлено'
+                'Риск' = $detection.Risk; 'Вероятность' = $detection.Probability; 'Дней с изменения' = 999
+                'Подпись' = 'N/A'; 'SHA256' = 'N/A'; 'VirusTotal' = 'N/A'; 'Автор' = '976hk'
             }
-            
-            $results += $result
-        }
-    }
-}
-
-$script:CurrentStep = 9
-$script:CurrentScanType = "Сканирование хостов"
-Update-ProgressDisplay
-
-if ($config.scan.check_hosts) {
-    $hostsPath = "$env:SystemRoot\System32\drivers\etc\hosts"
-    if (Test-Path $hostsPath) {
-        $hostsContent = Get-Content $hostsPath -ErrorAction SilentlyContinue
-        $suspiciousHosts = $hostsContent | Where-Object {
-            $_ -match [regex]::Escape($config.detection.cheat_patterns[0]) -and $_ -notmatch '^\s*#'
-        }
-        
-        if ($suspiciousHosts) {
-            foreach ($line in $suspiciousHosts) {
-                $detection = Get-RiskLevel -InputString $line
-                
-                $result = [PSCustomObject]@{
-                    'Тип' = 'Hosts'
-                    'Имя' = 'hosts'
-                    'Путь' = $hostsPath
-                    'PID' = 'N/A'
-                    'Детали' = $detection.Reason
-                    'Последнее изменение' = Format-LastWriteTime (Get-Item $hostsPath).LastWriteTime
-                    'Статус' = 'Изменен'
-                    'Риск' = $detection.Risk
-                    'Вероятность' = $detection.Probability
-                    'Дней с изменения' = Get-DaysSinceLastWrite (Get-Item $hostsPath).LastWriteTime
-                    'Подпись' = 'N/A'
-                    'SHA256' = 'N/A'
-                    'VirusTotal' = 'N/A'
-                    'Автор' = '976hk'
-                }
-                
-                $results += $result
-            }
+            [void]$results.Add($result)
         }
     }
 }
@@ -1304,73 +873,37 @@ $script:CurrentFileBeingScanned = ""
 Update-ProgressDisplay
 Write-Host ""
 
-$fileResults = $results | Where-Object { $_.Тип -notin @('Процесс', 'Служба', 'DLL Инжект') }
+$fileResults = $results | Where-Object { $_.Тип -notin @('Процесс', 'Java процесс', 'Системный процесс', 'Служба', 'DLL Инжект', 'Прочая DLL') }
+$criticalResults = $fileResults | Where-Object { $_.Риск -eq 'Critical' -and $_.'Дней с изменения' -le $config.scan.days_recent }
+$highResults = $fileResults | Where-Object { $_.Риск -eq 'High' -and $_.'Дней с изменения' -le $config.scan.days_recent }
+$suspiciousResults = $fileResults | Where-Object { $_.Риск -eq 'Suspicious' -and $_.'Дней с изменения' -le $config.scan.days_recent }
+$oldResults = $fileResults | Where-Object { $_.'Дней с изменения' -gt $config.scan.days_recent -and $_.Риск -ne 'System' }
 
-$criticalResults = $fileResults | Where-Object { 
-    $_.Риск -eq 'Critical' -and $_.'Дней с изменения' -le $config.scan.days_recent 
-} | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
-
-$highResults = $fileResults | Where-Object { 
-    $_.Риск -eq 'High' -and $_.'Дней с изменения' -le $config.scan.days_recent 
-} | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
-
-$suspiciousResults = $fileResults | Where-Object { 
-    $_.Риск -eq 'Suspicious' -and $_.'Дней с изменения' -le $config.scan.days_recent 
-} | Sort-Object -Property 'Дней с изменения', 'Вероятность' -Descending
-
-$oldResults = $fileResults | Where-Object { 
-    $_.'Дней с изменения' -gt $config.scan.days_recent -and $_.Риск -ne 'System' 
-} | Sort-Object -Property 'Дней с изменения' -Descending
-
-$systemResults = $serviceResults | Where-Object { 
-    $_.Риск -eq 'System' 
-}
-
-Write-Host "=== Результаты сканирования ===" -ForegroundColor Cyan
-Write-Host "Всего просканировано файлов: $($script:TotalFilesScanned)" -ForegroundColor White
-Write-Host "Всего найдено: $($results.Count)" -ForegroundColor White
-Write-Host "Свежие критические (≤$($config.scan.days_recent) дней): $($criticalResults.Count)" -ForegroundColor Red
-Write-Host "Свежие высокого риска (≤$($config.scan.days_recent) дней): $($highResults.Count)" -ForegroundColor DarkRed
-Write-Host "Свежие подозрительные (≤$($config.scan.days_recent) дней): $($suspiciousResults.Count)" -ForegroundColor Yellow
-Write-Host "Старые (более $($config.scan.days_recent) дней): $($oldResults.Count)" -ForegroundColor Gray
-Write-Host "Системных служб: $($systemResults.Count)" -ForegroundColor DarkGray
-Write-Host "Запущенных процессов: $($processResults.Count)" -ForegroundColor Magenta
-Write-Host "DLL инжектов: $($injectResults.Count)" -ForegroundColor DarkMagenta
-Write-Host ""
+Write-Host "`n════════════════════════════════════════════" -ForegroundColor DarkGray
+Write-Host "  РЕЗУЛЬТАТЫ СКАНИРОВАНИЯ" -ForegroundColor Cyan
+Write-Host "════════════════════════════════════════════" -ForegroundColor DarkGray
+Write-Host "Просканировано: $($script:TotalFilesScanned)" -ForegroundColor White
+Write-Host "Найдено: $($results.Count)" -ForegroundColor White
+Write-Host "Критические: $($criticalResults.Count)" -ForegroundColor Red
+Write-Host "Высокий риск: $($highResults.Count)" -ForegroundColor DarkRed
+Write-Host "Подозрительные: $($suspiciousResults.Count)" -ForegroundColor Yellow
+Write-Host "Старые: $($oldResults.Count)" -ForegroundColor Gray
 
 if ($results.Count -gt 0) {
     Write-Host "`nВведите путь для сохранения (Enter для рабочего стола):" -ForegroundColor Yellow
     $OutputPath = Read-Host
-    
-    if ([string]::IsNullOrWhiteSpace($OutputPath)) {
-        $OutputPath = [Environment]::ExpandEnvironmentVariables($config.output.output_path)
-    }
-    
+    if ([string]::IsNullOrWhiteSpace($OutputPath)) { $OutputPath = [Environment]::ExpandEnvironmentVariables($config.output.output_path) }
     $OutputPath = $OutputPath.Trim('"').Trim("'")
-    
-    if (-not (Test-Path -Path $OutputPath)) {
-        try { 
-            New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null 
-        }
-        catch { 
-            $OutputPath = [Environment]::GetFolderPath("Desktop")
-        }
-    }
+    if (-not (Test-Path $OutputPath)) { try { New-Item -ItemType Directory -Path $OutputPath -Force | Out-Null } catch { $OutputPath = [Environment]::GetFolderPath("Desktop") } }
     
     $timestamp = Get-Date -Format "yyyy-MM-dd_HH-mm-ss"
-    $csvFile = Join-Path -Path $OutputPath -ChildPath "$($config.output.filename_prefix)_$timestamp.csv"
-    $htmlFile = Join-Path -Path $OutputPath -ChildPath "$($config.output.filename_prefix)_$timestamp.html"
-    $jsonFile = Join-Path -Path $OutputPath -ChildPath "$($config.output.filename_prefix)_$timestamp.json"
+    $csvFile = Join-Path $OutputPath "$($config.output.filename_prefix)_$timestamp.csv"
+    $htmlFile = Join-Path $OutputPath "$($config.output.filename_prefix)_$timestamp.html"
     
     try {
         if ($config.output.save_csv) {
             $results | Export-Csv -Path $csvFile -NoTypeInformation -Delimiter ";" -Force -Encoding UTF8
             Write-Host "✅ CSV: $csvFile" -ForegroundColor Green
-        }
-        
-        if ($config.output.save_json) {
-            $results | ConvertTo-Json -Depth 10 | Out-File -FilePath $jsonFile -Encoding UTF8
-            Write-Host "✅ JSON: $jsonFile" -ForegroundColor Green
         }
         
         if ($config.output.save_html) {
@@ -1520,9 +1053,21 @@ h1 {
     border-left: 4px solid #cc66ff;
     background: #1a0a2a;
 }
+.java-process-item {
+    border-left: 4px solid #00ff00;
+    background: #0a2a0a;
+}
+.java-dll-item {
+    border-left: 4px solid #00ff88;
+    background: #0a2a1a;
+}
 .inject-item {
     border-left: 4px solid #ff00ff;
     background: #1a002a;
+}
+.other-dll-item {
+    border-left: 4px solid #00ffff;
+    background: #002a2a;
 }
 .critical-item {
     border-left: 4px solid #ff0000;
@@ -1561,13 +1106,16 @@ function toggleCollapsible(element) {
 <div class='summary'>
     <div class='summary-row'>
         <span class='summary-item' style='color: #666666;'>⚙️ Службы: $($serviceResults.Count)</span>
-        <span class='summary-item' style='color: #cc66ff;'>🚀 Процессы: $($processResults.Count)</span>
-        <span class='summary-item' style='color: #ff00ff;'>💉 Инжекты: $($injectResults.Count)</span>
+        <span class='summary-item' style='color: #00ff00;'>☕ Java процессы: $($javaProcessResults.Count)</span>
+        <span class='summary-item' style='color: #00ff88;'>🔗 DLL в Java: $($javaDllResults.Count)</span>
+        <span class='summary-item' style='color: #cc66ff;'>🚀 Другие процессы: $($processResults.Count)</span>
+        <span class='summary-item' style='color: #ff00ff;'>💉 Инжекты (Temp): $($injectResults.Count)</span>
+        <span class='summary-item' style='color: #00ffff;'>📦 Прочие DLL: $($otherDllResults.Count)</span>
         <span class='summary-item' style='color: #ffffff;'>📊 Всего просканировано: $($script:TotalFilesScanned)</span>
     </div>
     <div class='summary-row'>
-        <span class='summary-item' style='color: #ff0000;'>🔴 Свежие критические: $($criticalResults.Count)</span>
-        <span class='summary-item' style='color: #ff6600;'>🟠 Высокого риска: $($highResults.Count)</span>
+        <span class='summary-item' style='color: #ff0000;'>🔴 Критические: $($criticalResults.Count)</span>
+        <span class='summary-item' style='color: #ff6600;'>🟠 Высокий риск: $($highResults.Count)</span>
         <span class='summary-item' style='color: #ffff00;'>🟡 Подозрительные: $($suspiciousResults.Count)</span>
         <span class='summary-item' style='color: #888888;'>⚪ Старые: $($oldResults.Count)</span>
     </div>
@@ -1577,33 +1125,55 @@ function toggleCollapsible(element) {
             if ($serviceResults.Count -gt 0) {
                 $runningCount = ($serviceResults | Where-Object { $_.Статус -eq 'Running' }).Count
                 $stoppedCount = ($serviceResults | Where-Object { $_.Статус -ne 'Running' }).Count
-                
                 $html += @"
 <button class="collapsible" onclick="toggleCollapsible(this)">⚙️ Службы ($($serviceResults.Count)) — Запущено: $runningCount, Остановлено: $stoppedCount</button>
 <div class="collapsible-content">
 "@
-                
                 foreach ($item in $serviceResults) {
                     $isRunning = $item.Статус -eq 'Running'
                     $statusIcon = if ($isRunning) { '✅' } else { '❌' }
                     $statusClass = if ($isRunning) { 'service-running' } else { 'service-stopped' }
-                    $statusText = switch ($item.Статус) {
-                        'Running' { 'ЗАПУЩЕНА' }
-                        'Stopped' { 'ОСТАНОВЛЕНА' }
-                        'Paused' { 'ПРИОСТАНОВЛЕНА' }
-                        default { $item.Статус }
-                    }
-                    
-                    $html += @"
-<div class='item $statusClass'>
-<h3>$statusIcon $($item.Имя)</h3>
-<p class='path'>$($item.Путь)</p>
-<p class='reason'>$($item.Детали)</p>
-<p class='details'>Состояние: <strong>$statusText</strong></p>
-</div>
-"@
+                    $html += "<div class='item $statusClass'><h3>$statusIcon $($item.Имя)</h3><p class='path'>$($item.Путь)</p><p class='reason'>$($item.Детали)</p><p>Состояние: $($item.Статус)</p></div>"
                 }
-                
+                $html += "</div>"
+            }
+            
+            if ($criticalResults.Count -gt 0 -or $highResults.Count -gt 0 -or $suspiciousResults.Count -gt 0) {
+                $newFindings = @($criticalResults) + @($highResults) + @($suspiciousResults)
+                $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">🔍 Новые находки ($($newFindings.Count))</button>
+<div class="collapsible-content">
+"@
+                foreach ($item in $newFindings) {
+                    $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
+                    $itemClass = if ($item.Риск -eq 'Critical') { 'critical-item' } elseif ($item.Риск -eq 'High') { 'high-item' } else { 'suspicious-item' }
+                    $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
+                    $html += "<div class='item $itemClass'><h3>$($item.Имя)</h3><p class='path'>$($item.Путь)</p><p class='reason'>$($item.Детали)</p><p>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p><div class='tech-info'>Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256)</div></div>"
+                }
+                $html += "</div>"
+            }
+            
+            if ($javaDllResults.Count -gt 0) {
+                $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">🔗 DLL в Java процессах ($($javaDllResults.Count))</button>
+<div class="collapsible-content">
+"@
+                foreach ($item in $javaDllResults) {
+                    $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
+                    $html += "<div class='item java-dll-item'><h3>$($item.Имя) (PID: $($item.PID))</h3><p class='path'>$($item.Путь)</p><div class='tech-info'>Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256)</div></div>"
+                }
+                $html += "</div>"
+            }
+            
+            if ($javaProcessResults.Count -gt 0) {
+                $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">☕ Java процессы ($($javaProcessResults.Count))</button>
+<div class="collapsible-content">
+"@
+                foreach ($item in $javaProcessResults) {
+                    $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
+                    $html += "<div class='item java-process-item'><h3>$($item.Имя) (PID: $($item.PID))</h3><p class='path'>$($item.Путь)</p><div class='tech-info'>Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256)</div></div>"
+                }
                 $html += "</div>"
             }
             
@@ -1612,100 +1182,10 @@ function toggleCollapsible(element) {
 <button class="collapsible" onclick="toggleCollapsible(this)">💉 DLL Инжекты ($($injectResults.Count))</button>
 <div class="collapsible-content">
 "@
-                
                 foreach ($item in $injectResults) {
                     $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
-                    
-                    $html += @"
-<div class='item inject-item'>
-<h3>$($item.Имя)</h3>
-<p class='path'>$($item.Путь)</p>
-<p class='details'>Изменен: $($item.'Последнее изменение')</p>
-<div class='tech-info'>
-    Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
-</div>
-</div>
-"@
+                    $html += "<div class='item inject-item'><h3>$($item.Имя)</h3><p class='path'>$($item.Путь)</p><p>Изменен: $($item.'Последнее изменение')</p><div class='tech-info'>Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256)</div></div>"
                 }
-                
-                $html += "</div>"
-            }
-            
-            if ($criticalResults.Count -gt 0) {
-                $html += @"
-<button class="collapsible" onclick="toggleCollapsible(this)">🔴 Свежие критические находки ($($criticalResults.Count))</button>
-<div class="collapsible-content">
-"@
-                
-                foreach ($item in $criticalResults) {
-                    $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
-                    $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
-                    
-                    $html += @"
-<div class='item critical-item'>
-<h3>$($item.Имя)</h3>
-<p class='path'>$($item.Путь)</p>
-<p class='reason'>$($item.Детали)</p>
-<p class='details'>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p>
-<div class='tech-info'>
-    Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
-</div>
-</div>
-"@
-                }
-                
-                $html += "</div>"
-            }
-            
-            if ($highResults.Count -gt 0) {
-                $html += @"
-<button class="collapsible" onclick="toggleCollapsible(this)">🟠 Свежие находки высокого риска ($($highResults.Count))</button>
-<div class="collapsible-content">
-"@
-                
-                foreach ($item in $highResults) {
-                    $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
-                    $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
-                    
-                    $html += @"
-<div class='item high-item'>
-<h3>$($item.Имя)</h3>
-<p class='path'>$($item.Путь)</p>
-<p class='reason'>$($item.Детали)</p>
-<p class='details'>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p>
-<div class='tech-info'>
-    Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
-</div>
-</div>
-"@
-                }
-                
-                $html += "</div>"
-            }
-            
-            if ($suspiciousResults.Count -gt 0) {
-                $html += @"
-<button class="collapsible" onclick="toggleCollapsible(this)">🟡 Свежие подозрительные находки ($($suspiciousResults.Count))</button>
-<div class="collapsible-content">
-"@
-                
-                foreach ($item in $suspiciousResults) {
-                    $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } else { 'probability-low' }
-                    $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
-                    
-                    $html += @"
-<div class='item suspicious-item'>
-<h3>$($item.Имя)</h3>
-<p class='path'>$($item.Путь)</p>
-<p class='reason'>$($item.Детали)</p>
-<p class='details'>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p>
-<div class='tech-info'>
-    Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
-</div>
-</div>
-"@
-                }
-                
                 $html += "</div>"
             }
             
@@ -1714,77 +1194,48 @@ function toggleCollapsible(element) {
 <button class="collapsible" onclick="toggleCollapsible(this)">⚪ Старые находки ($($oldResults.Count))</button>
 <div class="collapsible-content">
 "@
-                
                 foreach ($item in $oldResults) {
-                    $probabilityClass = if ($item.Вероятность -ge 90) { 'probability-high' } elseif ($item.Вероятность -ge 70) { 'probability-medium' } elseif ($item.Вероятность -ge 40) { 'probability-low' } else { 'probability-none' }
                     $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
-                    
-                    $html += @"
-<div class='item old-item'>
-<h3>$($item.Имя)</h3>
-<p class='path'>$($item.Путь)</p>
-<p class='reason'>$($item.Детали)</p>
-<p class='details'>Вероятность: <span class='$probabilityClass'>$($item.Вероятность)%</span> | Изменен: $($item.'Последнее изменение')</p>
-<div class='tech-info'>
-    Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
-</div>
-</div>
-"@
+                    $html += "<div class='item old-item'><h3>$($item.Имя)</h3><p class='path'>$($item.Путь)</p><p class='reason'>$($item.Детали)</p><div class='tech-info'>Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256)</div></div>"
                 }
-                
                 $html += "</div>"
             }
             
             if ($processResults.Count -gt 0) {
                 $html += @"
-<button class="collapsible" onclick="toggleCollapsible(this)">🚀 Запущенные процессы ($($processResults.Count))</button>
+<button class="collapsible" onclick="toggleCollapsible(this)">🚀 Процессы ($($processResults.Count))</button>
 <div class="collapsible-content">
 "@
-                
                 foreach ($item in $processResults) {
                     $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
-                    
-                    $html += @"
-<div class='item process-item'>
-<h3>$($item.Имя) (PID: $($item.PID))</h3>
-<p class='path'>$($item.Путь)</p>
-<p class='details'>$($item.Детали) | Статус: $($item.Статус)</p>
-<div class='tech-info'>
-    Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256) | VirusTotal: $($item.VirusTotal)
-</div>
-</div>
-"@
+                    $html += "<div class='item process-item'><h3>$($item.Имя) (PID: $($item.PID))</h3><p class='path'>$($item.Путь)</p><div class='tech-info'>Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256)</div></div>"
                 }
-                
+                $html += "</div>"
+            }
+            
+            if ($otherDllResults.Count -gt 0) {
+                $html += @"
+<button class="collapsible" onclick="toggleCollapsible(this)">📦 Прочие DLL инжекты ($($otherDllResults.Count))</button>
+<div class="collapsible-content">
+"@
+                foreach ($item in $otherDllResults) {
+                    $signatureClass = if ($item.Подпись -eq 'Подписано') { 'signed' } else { 'unsigned' }
+                    $html += "<div class='item other-dll-item'><h3>$($item.Имя)</h3><p class='path'>$($item.Путь)</p><p>Изменен: $($item.'Последнее изменение')</p><div class='tech-info'>Подпись: <span class='$signatureClass'>$($item.Подпись)</span> | SHA256: $($item.SHA256)</div></div>"
+                }
                 $html += "</div>"
             }
             
             $html += "</body></html>"
             $html | Out-File -FilePath $htmlFile -Encoding UTF8
             Write-Host "✅ HTML: $htmlFile" -ForegroundColor Green
-            
-            if ($config.output.open_html_after_scan -and $htmlFile -and (Test-Path $htmlFile)) {
-                Start-Process $htmlFile
-            }
+            if ($config.output.open_html_after_scan -and (Test-Path $htmlFile)) { Start-Process $htmlFile }
         }
-        
     } catch {
-        Write-Host "❌ Ошибка при сохранении: $($_.Exception.Message)" -ForegroundColor Red
-        Write-Log "Ошибка при сохранении результатов: $($_.Exception.Message)" -Level 'ERROR'
+        Write-Host "❌ Ошибка: $($_.Exception.Message)" -ForegroundColor Red
     }
 } else {
     Write-Host "✅ Читы и инжекты не обнаружены." -ForegroundColor Green
 }
-
-if ($script:VirusTotalCache.Count -gt 0) {
-    try {
-        $script:VirusTotalCache | ConvertTo-Json -Depth 10 | Out-File -FilePath $config.virustotal.cache_file -Encoding UTF8
-    } catch {
-        Write-Log "Ошибка сохранения кэша VirusTotal" -Level 'WARNING'
-    }
-}
-
-Write-Log "Сканирование завершено. Всего найдено: $($results.Count)" -Level 'INFO'
 
 Write-Host "`n════════════════════════════════════════════" -ForegroundColor DarkGray
 Write-Host "  Сканирование завершено" -ForegroundColor Cyan
