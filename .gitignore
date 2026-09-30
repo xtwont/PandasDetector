@@ -1,0 +1,34 @@
+# PowerShell
+*.log
+*.tmp
+*.bak
+*.old
+
+# Кэши скрипта
+modrinth_cache.json
+scan_log.txt
+scan_log_*.txt
+log_search_*.txt
+Amcache_scan_*.hve
+
+# Отчёты
+cheat_scan_*.csv
+cheat_scan_*.html
+cheat_scan_*.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Секреты
+*_secret.*
+*_token.*
+.env
+secrets.json
