@@ -1,6 +1,567 @@
-{
-  "version": "2026-09-30",
-  "updated": "2026-09-30T00:00:00Z",
-  "count": 0,
-  "hashes": {}
+﻿{
+    "count":  80,
+    "hashes":  {
+                   "2E4DEE5CEBE694065D2B1C8E842C19E3B26E0312071FE48F6A5458D7E102D357":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "23174CDCC44DDBDBCC5934422AD79ACF1EA1DA85CDEBFF706DBA27BF3E63DB3F":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "client 2.04.01",
+                                                                                            "source":  "https://github.com/kami-blue/client/releases/tag/2.04.01",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "63D78D9F6CD2E66983B5B4E0D6C79F5C52A9D3321B0FCD2117F5856CE7276DC7":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "538161C3DBCA9F5C3102EB7AC3CF39B84492E71C900B0E3A94AB216EE36816A3":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "CEF95363A3CA836F3058CAFEAA542CFB70C1CB12591639328371ECC525723178":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "38068C290974CAF9EEDAE4B6A06F0D9464DC68F301B9CCC58C216B42F0AC8C23":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "7F9F40952C49E78388E4E9CEAA6FD91A5B662238E06C997B3DE5438177F99D8D":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "3E31207D4BE9C1C02910B56AEB56CB6982BC7040F6FE6A93687D71EEEB5C43AE":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "2084634BDA7E7724086FBB3A4B7BB9DC9E4E858E50AAF6D55E9D9216120FCF6E":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "65D2FC8514626B0018121D1153D59B170C2E82BACB2A15A05A3C529B29B86C63":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "D52DEE5B488FF2BD6E85CFEA3B5C72238960D56D579B3243810B768C6486D75B":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.4",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.4",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "26DD1DEB19D66F54470A492854AEA245485910AA2C6D79E58AC7F561D1BAAB29":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "BFFBDFB0F6E1E8E3EEEEFB1A9D4D54E435606285A0D249AC39E56310769661A7":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.6",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.6",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "36992DFDBEE1D9CD400398ABEF8D08A1F1719A34A10A5278BD78B0A36EBD65A8":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "EDBEA33D781E93DA14BB75073622DFEB1653CDF3CCDCBC7FDDFE8C7D0D3DDC02":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "B257863E4E2D9A1E4205B3C1A1DD9368A2A6038AE79E50F0393F16421BE2FDCB":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.6",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.6",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "ABBD76F11EDDC1B4B8E45ECAE3200CDE0D4D9363DB20F585B3D6B351EAD28CF5":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "A65B0C6DDEBD2A85B10CE866DC89DC4A3AFD593D3EEA811BA41F649E79A8467E":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "F9A9B17A41D7D7AD22C759058B14FD01E3319663282E66F99E18153237FA6767":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "B7559A9767C95AEAFB7D932C7570FC79CF66C1E5EE74182D78787DAD8A480110":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "B6E8AC6DE02D589C891039297D1173A64AD254AA34F097055795BBE526B057B0":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "77871FBBDF61C58225A114E1F93CBB1CABB2FB60F29EC8624E91FF8AD9B19610":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "45B1669A4422E35A3BADAED31C8E15A496684C21E32758611F3C6FEEAC684354":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.6",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.6",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "A6B3BB3DF1A1BDEAD9CA86035C8778C379718AAAFEAC90D1A6348BDCBF93159D":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "E8EFC21CD2DD134AEFF9D09F024FA04B2390A94BA60CBCC7BDE13F31C9C91FDB":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "12326E656878F1C09E88F684E10ADA335236681E3360A3A9DD094135CE05BEC7":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.6",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.6",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "D1B46D449915ECDB5D41C0BBB18714BA1FACB495D7DE0459D8F7487121A67FE6":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.6",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.6",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "02C1B7344EF8A5A6BE231988B14235697FACCA67C487FAAF133FF1753E5B8455":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "8844B852B71688431D38BFA95530C888F59B68CE7EB1ED7E3E0A05BC158B7C13":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "BD711F8466F1485ECC60A40222E62F78C97F5DD675E302C870BAD308FBEE08A0":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "BC7AC99E73678623AFF7EB0567A70FD1EEDE768C971599AA450D6791B0851834":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "6BEB1D5CA49F0B4AE36135863AFB2ED6ED4BAE3ED702191CBB324F25F291DAD5":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "22A3EF366FC6D78FB2E0EAA265C7E25BB5A9B2123F4146CAE34122C6F80B9A5C":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "0D4459811668E9F69AEB2F7D75B83693DB562FE5057EF6927F23C637B8B2E8EE":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "91F16A43F85DB7726E2694DF12DB7BC85156E9BA8047FE6EEDFEFDA37F244ED3":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.5",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.5",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "0B865C24503E29A151B855C22CF4D9AAAD52EDCCC89BB9FD040572A02AEE7972":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "client 2.03.01",
+                                                                                            "source":  "https://github.com/kami-blue/client/releases/tag/2.03.01",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "9C5D85A0FD41F6090D437DD49B7ECB9C3B314B4BAC21012CF4487E72D33417C5":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.5",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.5",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "7978F03FC51C281E3CEE45CEB634046BECC9EC39C7B5DB4DF3463A7123A89C13":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "F418A1C9A439F17C83CA8952E8BBD056BF909257A319D0407BDA991CCB094FDF":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "ACC027F8CFC8DF5BFDE884A306F13065389AA89FDB8C08C08E730474364224DB":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "client 2.02.01",
+                                                                                            "source":  "https://github.com/kami-blue/client/releases/tag/2.02.01",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "6778C30985EAB88600BB153CFCB8E2EBBE0085C40C87EFFED3BDA11DFB4AB6A6":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "BBFA7A898AD05D61F6E1FFFEBD1721CF5414C9FC54EC9E8094B1C69F3B5A0C43":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "A1C2A1DFB62F53A2000F3D9D2820CF89847056A309B8D4D3903253EEDBCDC83B":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "EDF6235D7925C15EBF1BDC8EBB03654DC548E23E6299FF1CA5137DE7F31E2FC7":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "BE705C55C554E764959CD7487D6723C7B1821F686E6B4BB0E412380E01B62237":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "5716BC3D651E87495EC913587481D0F2CE2E68B6819D276EE51DAA576C57B55B":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.4",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.4",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "A030F6D4D3B2E83D7BD2E247F7B9FDA646CE171BE86495C832BB475CD5C135B5":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "EFFE59186121BB283E7953AD0CEC2DDCEA4BA803F398C97AE1973B8A305621AD":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.6",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.6",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "2FCCEBD5D66376076EC3E6E1CB8456624D32986BAFB40734C115778272C66A52":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "7836A235F37339897425EC303B5C0D7F3CF9D99DBDAA1952240B5099AAFD8776":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "A6BFED22301B5DCC4B1A2DA9E9B8D1A52F617AA4D55B01B3BB1705636656BA26":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.3",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.3",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "4AD2AA21A9A88683EF5C2158EE73EEF902BE159BBAC44C0BD853F5FD708821BF":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "8A042C0883B775D92A75184AA740CAA7D9B00E56544CD971142C196E2BE9505B":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "7223E4A9061978D9D57C04D0DCE650DA554C7C6B49FECA6F40AEC5A96DB54BDA":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.2",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.2",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "49ADFC063CFBFD0B6F08E9D814359807BAA2D1768C0D39D6C5968268547CBCA6":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "4B084D054AD282C51ECA8B748D4321C73B9F444BB5A3D788AD39A26E0E677AF7":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "6044D08949F4BF75C24E3B513207A31E476C965A8F12E6F16B75B5BF7F8351D7":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "BEFAE152267588DFAD4144DAEFE1CF19045B5B91F9477D95B2A5C3FF22CDEC85":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "86D69F89EE401E31FC331B1A540962B9AF620D448E8D4B462D3EAC5F6DDE5440":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.3",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.3",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "2C2FDC342BFE6BA5BD5FE9656188E27E3EA89371C77163F05050807E59EE443C":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "B3B36AA3D74C4DF053D147EE9254B70C15F4D1E5E11A2766141A146EEA3BD60B":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "BE75EC6AD14A98DB0DB4ABA03C5930413F7DC6F3D44694F92C38D859112B349E":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "0CB6584CB9691FDE09FAB3594A6B9E9FC4DD6347154FFE574A3CA223ACAD048C":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "E9D555E53E2BBEF4B3F39AE31EFFD9970763AEE6E870E815D6A3E268F34E73F6":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "443FA741416A106A597631FD3661287C1B75698A9271F30DE6253DF717680621":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.4",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.4",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "F38B715005C31628C716894434D564ADEC65D765985E676D4A2A98C787314BE8":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "06D7B32E270E1116441E8FFE01B44033B1F174C233629063ECA6B99D8FFA247E":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "02239BFF27955BD842C2E132C2860689BC1190F2CA37B7F379213D8874D75903":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "B66427DB0F40CD65EE24921908EBBF9C3612D4150362F600F2D17AED194DB855":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "67037EA5C0E98E8E28B324E101BDEEB73E744118DBDB9DBF928E36F505D16D3B":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.20.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.20.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "76315E9082D7FEAE78E5A979537CB15491E33364AB9BE90C74A65E132066521F":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "client 2.04.21-3c581c22b",
+                                                                                            "source":  "https://github.com/kami-blue/client/releases/tag/2.04.21-3c581c22b",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "6B5C2CFEBA60435EC27A9B96611302AD5FB08C5102CE1849630905BFDCD82251":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "client 2.01.01",
+                                                                                            "source":  "https://github.com/kami-blue/client/releases/tag/2.01.01",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "4621D6E415F0B52D683C9D7A80DFA35769F2C5F9606322C52B617E1C04AFD290":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "F3F84152A288704F54FCEAF32C58958D2EDC87EA04C6FD1CED6EBFD6FEA83810":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.7",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.7",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "6A0846386C8E19745D79F685EFF042CA1C511B53A19B541526FC08C813D2619A":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.11.3",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.11.3",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "96C69C3658565FC9DADA2C39D361E9061AD8C4FEE1E3D62752A823E9F188B243":  {
+                                                                                            "category":  "cheat_client",
+                                                                                            "name":  "BleachHack 1.2.6",
+                                                                                            "source":  "https://github.com/BleachDrinker420/BleachHack/releases/tag/1.2.6",
+                                                                                            "risk":  "Critical",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "F852851E8DBC3BC53CF72E7926ECCAB05960B665178AF5143C90149F6CA52CB5":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "159D83FA657C87A513AECDDC4FB6B4D12CE7809A6B1CF6072056974B63E8DCA0":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "C94E563E87656972BD557C6B1D6AB92448C9DC9EDF9F438A246D061880FBC464":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.10.8",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.10.8",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        },
+                   "A5E64EA7D196F7305666B52B2561FFF5E8239C0D439ED31FC067CA29113E6911":  {
+                                                                                            "category":  "auto_miner",
+                                                                                            "name":  "baritone v1.12.0",
+                                                                                            "source":  "https://github.com/cabaletta/baritone/releases/tag/v1.12.0",
+                                                                                            "risk":  "High",
+                                                                                            "added":  "2026-09-30"
+                                                                                        }
+               },
+    "version":  "2026-09-30",
+    "updated":  "2026-09-30T19:13:36.7232469+03:00"
 }
