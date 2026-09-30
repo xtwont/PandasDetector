@@ -1,0 +1,70 @@
+{
+  "version": "1.0",
+  "updated": "2026-09-30",
+  "repos": [
+    {
+      "owner": "MeteorDevelopment",
+      "repo": "meteor-client",
+      "category": "cheat_client",
+      "risk": "Critical",
+      "file_patterns": ["\\.jar$"],
+      "max_releases": 10
+    },
+    {
+      "owner": "Wurst-Imperium",
+      "repo": "Wurst7",
+      "category": "cheat_client",
+      "risk": "Critical",
+      "file_patterns": ["\\.jar$"],
+      "max_releases": 10
+    },
+    {
+      "owner": "ImpactDevelopment",
+      "repo": "ImpactClient",
+      "category": "cheat_client",
+      "risk": "Critical",
+      "file_patterns": ["\\.jar$", "\\.exe$"],
+      "max_releases": 5
+    },
+    {
+      "owner": "BleachDrinker420",
+      "repo": "BleachHack",
+      "category": "cheat_client",
+      "risk": "Critical",
+      "file_patterns": ["\\.jar$"],
+      "max_releases": 5
+    },
+    {
+      "owner": "CCBlueX",
+      "repo": "LiquidBounce",
+      "category": "cheat_client",
+      "risk": "Critical",
+      "file_patterns": ["\\.jar$", "\\.exe$", "\\.zip$"],
+      "max_releases": 5
+    },
+    {
+      "owner": "kami-blue",
+      "repo": "client",
+      "category": "cheat_client",
+      "risk": "Critical",
+      "file_patterns": ["\\.jar$"],
+      "max_releases": 5
+    },
+    {
+      "owner": "cabaletta",
+      "repo": "baritone",
+      "category": "auto_miner",
+      "risk": "High",
+      "file_patterns": ["\\.jar$"],
+      "max_releases": 5
+    },
+    {
+      "owner": "KonasClient",
+      "repo": "Konas",
+      "category": "cheat_client",
+      "risk": "Critical",
+      "file_patterns": ["\\.jar$"],
+      "max_releases": 3
+    }
+  ]
+}
